@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Nustbites" />
+    <meta name="author" content="Your Name" />
+    <meta name="keywords" content="Nustbites, comparison, pictures" />
+    <title>Nustbites</title>
+    {% block style %}
+
+    <!-- CSS Stylesheet -->
+    <html data-theme="light"></html>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static',filename = 'css/styles.css') }}"
+    />
+    <script src="{{url_for('static',filename='scripts/jquery.js')}}"></script>
+    {% endblock %}
+  </head>
+  <body>
+    <div ></div>
+    {% block body %}{% endblock %}
+  </body>
+</html>
