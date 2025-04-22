@@ -3,30 +3,43 @@ from models import *
 from forms import *
 
 
-routes_bp= Blueprint('routes',__name__)
+routes_bp = Blueprint('routes', __name__)
 
-@routes_bp.route('/', methods=['POST', 'GET'])
+# =====================
+# Home Page (After Login)
+# =====================
+@routes_bp.route('/')
 @login_required
 def home():
-    return render_template('home.html')
+    return render_template('home.html', user=current_user)
 
-# Log In Page
-@routes_bp.route('/login', methods=['POST', 'GET'])
+# =====================
+# Login Page
+# =====================
+@routes_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('routes.home'))
+    
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user is not None and bcrypt.check_password_hash(user.password, form.password.data):
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user)
-            if user.role == "admin":  # Assuming role-based access
-                return redirect(url_for('admin.index'))
-            return redirect(url_for('routes.home')) 
-        else: return 'Invalid username or password'
+            flash('Login successful!', 'success')
+            # Redirect based on role
+            if user.role == Role.ADMIN:
+                return redirect(url_for('admin.dashboard'))  # hypothetical admin blueprint
+            else:
+                return redirect(url_for('routes.home'))  # general user home
+        flash('Invalid credentials', 'danger')
     return render_template('login.html', form=form)
 
+# =====================
 # Register Page
-@routes_bp.route('/register', methods=['POST', 'GET'])
-def register_page():
+# =====================
+@routes_bp.route('/register', methods=['GET', 'POST'])
+def register():
     form = RegisterForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -35,10 +48,20 @@ def register_page():
             email=form.email.data,
             password=hashed_password,
             whatsapp_no=form.whatsappno.data,
-            role=Role.USER  # Change to Enum if using Enum(UserRole)
+            role=Role.USER  # Default role is USER
         )
         db.session.add(new_user)
         db.session.commit()
+        flash('Account created! You can now log in.', 'success')
         return redirect(url_for('routes.login'))
-
     return render_template('register.html', form=form)
+
+# =====================
+# Logout
+# =====================
+@routes_bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Logged out successfully.', 'info')
+    return redirect(url_for('routes.login'))

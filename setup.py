@@ -19,6 +19,7 @@ def create_app():
     admin = Admin(app, name="Admin Panel", template_mode="bootstrap4")  # Change to bootstrap4 or bootstrap5
     admin.add_view(UserModelView(User, db.session))
     admin.add_view(RestaurantModelView(Restaurant, db.session))
+    admin.add_view(MenuModelView(Menu, db.session, name='Menu Items'))
 
     @login_manager.user_loader
     def load_user(user_id):

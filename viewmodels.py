@@ -68,3 +68,27 @@ class RestaurantModelView(ModelView):
     def inaccessible_callback(self, name, **kwargs):
         flash("You are not authorized to access this page.", "danger")
         return redirect(url_for('routes.login'))
+    
+
+
+class MenuModelView(ModelView):
+    column_list = ('id', 'name', 'category', 'price', 'is_available', 'restaurant_id','image_url','description')  # Columns to display
+    column_searchable_list = ['name', 'category']
+    column_filters = ['is_available', 'category', 'restaurant_id']
+    form_excluded_columns = []  
+    # You can exclude fields here if needed
+    column_labels = {
+        'restaurant_id': 'Restaurant',
+        'is_available': 'Available',
+        'image_url': 'Image',
+        'description': 'Description',
+    }
+    can_create = True
+    can_edit = True
+    can_delete = True
+
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.role.name == 'ADMIN'  # Or use Role.ADMIN if enum
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('routes.login', next=request.url))
