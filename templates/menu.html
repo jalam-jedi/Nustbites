@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Menu - NUST Bites</title>
+    <link rel="stylesheet" href="/static/styles.css"> <!-- Optional -->
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      nav {
+        background-color: #f8f8f8;
+        padding: 10px;
+      }
+      nav button {
+        margin-right: 10px;
+        padding: 5px 10px;
+      }
+      section.category-section {
+        margin: 40px 0;
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .menu-item img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        margin-right: 15px;
+      }
+    </style>
+</head>
+<body>
+
+<!-- Hidden field to store Restaurant ID -->
+<input type="hidden" id="restaurantId" value="{{ restaurant_id }}">
+
+<!-- Navbar -->
+<nav id="category-navbar">
+  <!-- Category buttons will be inserted dynamically -->
+</nav>
+
+<!-- Full Menu Sections -->
+<div id="menu-list">
+  <!-- Menu organized by categories will be inserted dynamically -->
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const restaurantId = document.getElementById('restaurantId').value;
+
+        fetch(`/api/menu?restaurant_id=${restaurantId}`)
+            .then(response => response.json())
+            .then(data => {
+                const menuContainer = document.getElementById('menu-list');
+
+                for (const category in data) {
+                    // Create category section
+                    const categorySection = document.createElement('section');
+                    categorySection.className = 'category-section';
+                    categorySection.id = category.replace(/\s+/g, '-').toLowerCase(); // for smooth scroll
+
+                    // Heading
+                    const categoryHeading = document.createElement('h2');
+                    categoryHeading.textContent = category;
+                    categorySection.appendChild(categoryHeading);
+
+                    // Menu Items
+                    data[category].forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'menu-item';
+                        itemDiv.innerHTML = `
+                            ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}">` : ''}
+                            <div>
+                                <h4>${item.name} - Rs.${item.price}</h4>
+                                <p>${item.description || ''}</p>
+                            </div>
+                        `;
+                        categorySection.appendChild(itemDiv);
+                    });
+
+                    menuContainer.appendChild(categorySection);
+
+                    // Create navbar button
+                    const navbar = document.getElementById('category-navbar');
+                    const button = document.createElement('button');
+                    button.textContent = category;
+                    button.onclick = () => {
+                        document.getElementById(categorySection.id).scrollIntoView({ behavior: 'smooth' });
+                    };
+                    navbar.appendChild(button);
+                }
+            })
+            .catch(error => console.error('Error fetching menu:', error));
+    });
+</script>
+
+</body>
+</html>

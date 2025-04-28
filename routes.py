@@ -65,3 +65,14 @@ def logout():
     logout_user()
     flash('Logged out successfully.', 'info')
     return redirect(url_for('routes.login'))
+
+
+
+@routes_bp.route('/menu/<int:restaurant_id>')
+@login_required
+def menu_page(restaurant_id):
+    """
+    Load the menu.html page dynamically for a given restaurant.
+    The restaurant_id will be passed to frontend JS for API fetching.
+    """
+    return render_template('menu.html', restaurant_id=restaurant_id, user=current_user)

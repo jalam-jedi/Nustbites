@@ -3,6 +3,7 @@ from extensions import *
 from routes import routes_bp
 from viewmodels import *
 from models import *
+from api_routes import api_bp
 def create_app():
     app = Flask(__name__)
 
@@ -26,6 +27,7 @@ def create_app():
         return User.query.get(int(user_id))
 
     app.register_blueprint(routes_bp)
+    app.register_blueprint(api_bp)
     # Import routes (to avoid circular imports)
     with app.app_context():
         import models

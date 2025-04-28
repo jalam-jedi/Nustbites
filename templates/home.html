@@ -12,4 +12,43 @@
     <p class="text-lg text-gray-700">Serving your Cravings</p>
   </div>
 </div>
+<h1>Our Restaurants</h1>
+
+<div id="restaurants-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+    <!-- Restaurants will be loaded dynamically here -->
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    fetch('/api/restaurants')
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('restaurants-container');
+
+            data.forEach(restaurant => {
+                const restaurantCard = document.createElement('div');
+                restaurantCard.style.border = '1px solid #ccc';
+                restaurantCard.style.padding = '20px';
+                restaurantCard.style.width = '200px';
+                restaurantCard.style.textAlign = 'center';
+                restaurantCard.style.borderRadius = '8px';
+                restaurantCard.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
+                restaurantCard.style.backgroundColor = '#f9f9f9';
+
+                restaurantCard.innerHTML = `
+                    <h3>${restaurant.name}</h3>
+                    <button onclick="goToMenu(${restaurant.id})" style="margin-top: 10px; padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px;">View Menu</button>
+                `;
+
+                container.appendChild(restaurantCard);
+            });
+        })
+        .catch(error => console.error('Error fetching restaurants:', error));
+});
+
+// Redirect to menu page with restaurant id
+function goToMenu(restaurantId) {
+    window.location.href = `/menu/${restaurantId}`;
+}
+</script>
 {% endblock %}
