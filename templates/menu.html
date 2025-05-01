@@ -1,101 +1,286 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Menu - NUST Bites</title>
-    <link rel="stylesheet" href="/static/styles.css"> <!-- Optional -->
-    <style>
-      html {
-        scroll-behavior: smooth;
-      }
-      nav {
-        background-color: #f8f8f8;
-        padding: 10px;
-      }
-      nav button {
-        margin-right: 10px;
-        padding: 5px 10px;
-      }
-      section.category-section {
-        margin: 40px 0;
-      }
-      .menu-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-      }
-      .menu-item img {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        margin-right: 15px;
-      }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Menu</title>
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    nav {
+      background-color: #f8f8f8;
+      padding: 10px;
+      flex-wrap: wrap;
+    }
+
+    nav button {
+      margin: 5px 10px 5px 0;
+      padding: 6px 12px;
+      border-radius: 5px;
+      background-color: #eee;
+      border: none;
+      cursor: pointer;
+    }
+
+    nav button:hover {
+      background-color: #ddd;
+    }
+
+    section.category-section {
+      margin: 40px 0;
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .dropdown-content {
+      position: absolute !important;
+      top: 60px !important;
+      z-index: 999;
+    }
+
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .qty-controls button {
+      padding: 5px 10px;
+      background-color: #e2e8f0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .qty-controls button:hover {
+      background-color: #cbd5e1;
+    }
+  </style>
 </head>
 <body>
+  <!-- Navbar -->
+  <div class="navbar bg-base-100 shadow-sm z-10 relative">
+    <div class="flex-1">
+      <a class="btn btn-ghost text-xl" href="{{ url_for('routes.home') }}">NustBites</a>
+    </div>
+    <div class="flex-none">
+      <!-- Bucket Dropdown -->
+      <div class="dropdown dropdown-end relative">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+          <div class="indicator">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span id="bucket-count-icon" class="badge badge-sm indicator-item">0</span>
+          </div>
+        </div>
+        <div tabindex="0" class="card card-compact dropdown-content bg-base-100 mt-0 w-60 shadow">
+          <div class="card-body">
+            <span class="text-lg font-bold">Bucket</span>
+            <span id="bucket-summary" class="text-info">Subtotal: Rs. 0</span>
+            <div class="card-actions">
+              <button class="btn btn-primary btn-block" id="dropdown-view-bucket-btn">View Bucket</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-<!-- Hidden field to store Restaurant ID -->
-<input type="hidden" id="restaurantId" value="{{ restaurant_id }}">
+      <!-- Profile Dropdown -->
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+          <div class="w-10 rounded-full">
+            <img
+              alt="Profile"
+              src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+          </div>
+        </div>
+        <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
+          <li><a class="justify-between">Profile <span class="badge">New</span></a></li>
+          <li><a>Settings</a></li>
+          <li><a>Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
-<!-- Navbar -->
-<nav id="category-navbar">
-  <!-- Category buttons will be inserted dynamically -->
-</nav>
+  <!-- Hidden field to store Restaurant ID -->
+  <input type="hidden" id="restaurantId" value="{{ restaurant_id }}">
 
-<!-- Full Menu Sections -->
-<div id="menu-list">
-  <!-- Menu organized by categories will be inserted dynamically -->
-</div>
+  <!-- Category Nav -->
+  <nav id="category-navbar" class="flex p-4"></nav>
 
-<script>
+  <!-- Full Menu Sections -->
+  <div id="menu-list" class="p-4 space-y-10"></div>
+
+  <!-- JavaScript -->
+  <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const restaurantId = document.getElementById('restaurantId').value;
+      let bucket = [];
 
-        fetch(`/api/menu?restaurant_id=${restaurantId}`)
-            .then(response => response.json())
-            .then(data => {
-                const menuContainer = document.getElementById('menu-list');
+      function updateBucketButton() {
+        const iconCount = document.getElementById('bucket-count-icon');
+        const summary = document.getElementById('bucket-summary');
 
-                for (const category in data) {
-                    // Create category section
-                    const categorySection = document.createElement('section');
-                    categorySection.className = 'category-section';
-                    categorySection.id = category.replace(/\s+/g, '-').toLowerCase(); // for smooth scroll
+        const totalItems = bucket.reduce((sum, item) => sum + item.quantity, 0);
+        const totalPrice = bucket.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-                    // Heading
-                    const categoryHeading = document.createElement('h2');
-                    categoryHeading.textContent = category;
-                    categorySection.appendChild(categoryHeading);
+        iconCount.textContent = totalItems;
+        summary.textContent = `Subtotal: Rs. ${totalPrice}`;
+      }
 
-                    // Menu Items
-                    data[category].forEach(item => {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'menu-item';
-                        itemDiv.innerHTML = `
-                            ${item.image_url ? `<img src="${item.image_url}" alt="${item.name}">` : ''}
-                            <div>
-                                <h4>${item.name} - Rs.${item.price}</h4>
-                                <p>${item.description || ''}</p>
-                            </div>
-                        `;
-                        categorySection.appendChild(itemDiv);
-                    });
+      function increaseQuantity(id) {
+        const item = bucket.find(i => i.id === id);
+        if (item) {
+          item.quantity += 1;
+        } else {
+          const card = document.querySelector(`[data-id="${id}"]`);
+          const name = card.getAttribute('data-name');
+          const price = parseFloat(card.getAttribute('data-price'));
+          bucket.push({ id, name, price, quantity: 1 });
+        }
+        updateBucketButton();
+        updateQtyDisplay(id);
+      }
 
-                    menuContainer.appendChild(categorySection);
+      function decreaseQuantity(id) {
+        const item = bucket.find(i => i.id === id);
+        if (item) {
+          item.quantity -= 1;
+          if (item.quantity <= 0) {
+            bucket = bucket.filter(i => i.id !== id);
+          }
+        }
+        updateBucketButton();
+        updateQtyDisplay(id);
+      }
 
-                    // Create navbar button
-                    const navbar = document.getElementById('category-navbar');
-                    const button = document.createElement('button');
-                    button.textContent = category;
-                    button.onclick = () => {
-                        document.getElementById(categorySection.id).scrollIntoView({ behavior: 'smooth' });
-                    };
-                    navbar.appendChild(button);
-                }
-            })
-            .catch(error => console.error('Error fetching menu:', error));
+      function updateQtyDisplay(id) {
+        const qtySpan = document.querySelector(`#qty-${id}`);
+        const item = bucket.find(i => i.id === id);
+        qtySpan.textContent = item ? item.quantity : 0;
+      }
+
+      const restaurantId = document.getElementById('restaurantId').value;
+
+      fetch(`/api/menu?restaurant_id=${restaurantId}`)
+        .then(response => response.json())
+        .then(data => {
+          const menuContainer = document.getElementById('menu-list');
+
+          for (const category in data) {
+            const section = document.createElement('section');
+            section.className = 'category-section';
+            section.id = category.replace(/\s+/g, '-').toLowerCase();
+
+            const heading = document.createElement('h2');
+            heading.textContent = category;
+            heading.className = 'text-2xl font-bold mb-4 text-gray-800';
+            section.appendChild(heading);
+
+            const grid = document.createElement('div');
+            grid.className = 'grid-container';
+
+            data[category].forEach(item => {
+              const card = document.createElement('div');
+              card.className = 'card';
+              card.setAttribute('data-id', item.id);
+              card.setAttribute('data-name', item.name);
+              card.setAttribute('data-price', item.price);
+
+              if (item.image_url) {
+                const img = document.createElement('img');
+                img.src = item.image_url;
+                img.alt = item.name;
+                card.appendChild(img);
+              }
+
+              const title = document.createElement('h4');
+              title.className = 'text-lg font-semibold';
+              title.textContent = item.name;
+              card.appendChild(title);
+
+              const desc = document.createElement('p');
+              desc.className = 'text-sm text-gray-600 mt-1';
+              desc.textContent = item.description || '';
+              card.appendChild(desc);
+
+              const price = document.createElement('p');
+              price.className = 'text-md font-bold text-red-600 mt-2';
+              price.textContent = `Rs. ${item.price}`;
+              card.appendChild(price);
+
+              const qtyControls = document.createElement('div');
+              qtyControls.className = 'qty-controls';
+
+              const minusBtn = document.createElement('button');
+              minusBtn.textContent = '−';
+              minusBtn.onclick = () => decreaseQuantity(item.id);
+
+              const qtySpan = document.createElement('span');
+              qtySpan.id = `qty-${item.id}`;
+              qtySpan.textContent = 0;
+
+              const plusBtn = document.createElement('button');
+              plusBtn.textContent = '+';
+              plusBtn.onclick = () => increaseQuantity(item.id);
+
+              qtyControls.appendChild(minusBtn);
+              qtyControls.appendChild(qtySpan);
+              qtyControls.appendChild(plusBtn);
+
+              card.appendChild(qtyControls);
+              grid.appendChild(card);
+            });
+
+            section.appendChild(grid);
+            menuContainer.appendChild(section);
+
+            const navbar = document.getElementById('category-navbar');
+            const btn = document.createElement('button');
+            btn.textContent = category;
+            btn.onclick = () => document.getElementById(section.id).scrollIntoView({ behavior: 'smooth' });
+            navbar.appendChild(btn);
+          }
+        })
+        .catch(error => console.error('Error fetching menu:', error));
+
+      function showOrderSummary() {
+        alert('Order Summary:\n' + bucket.map(item => `${item.name} x${item.quantity}`).join('\n'));
+      }
+
+      document.getElementById('dropdown-view-bucket-btn').addEventListener('click', function (e) {
+        e.preventDefault();
+        showOrderSummary();
+      });
     });
-</script>
-
+  </script>
 </body>
 </html>
