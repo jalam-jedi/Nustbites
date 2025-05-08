@@ -1,25 +1,27 @@
+<!-- basic.html -->
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Nustbites" />
-    <meta name="author" content="Your Name" />
-    <meta name="keywords" content="Nustbites, comparison, pictures" />
-    <title>Nustbites</title>
-    {% block style %}
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title if title else 'NustBites' }}</title>
 
-    <!-- CSS Stylesheet -->
-    <html data-theme="light"></html>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static',filename = 'css/styles.css') }}"
-    />
-    <script src="{{url_for('static',filename='scripts/jquery.js')}}"></script>
-    {% endblock %}
-  </head>
-  <body>
-    <div ></div>
-    {% block body %}{% endblock %}
-  </body>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.20/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  {% block style %}{% endblock %}
+</head>
+<body class="min-h-screen bg-base-200 text-base-content">
+
+  <!-- Navbar (fallback) -->
+  {% block navbar %}
+  <div class="navbar bg-base-100 shadow-sm sticky top-0 z-10">
+    
+    <a class="btn btn-ghost text-xl hover:!bg-transparent hover:!text-current" href="{{ url_for('routes.home') }}">NustBites</a>
+    
+  </div>
+  {% endblock %}
+
+  {% block content %}{% endblock %}
+  {% block scripts %}{% endblock %}
+</body>
 </html>

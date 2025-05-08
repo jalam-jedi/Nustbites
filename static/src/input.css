@@ -5,5 +5,5 @@ body {
 }
 
 @plugin "daisyui" {
-  themes: dark, --default, light--prefersdark;
+  themes: cupcake --default, light--prefersdark;
 }
