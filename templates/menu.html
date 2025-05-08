@@ -1,11 +1,13 @@
-{% extends 'basic.html' %}
-
-{% block title %}Menu - Nustbites{% endblock %}
-
-{% block navbar %}
+{% extends 'basic.html' %} {% block title %}Menu - Nustbites{% endblock %} {%
+block navbar %}
 <div class="navbar bg-base-100 shadow-sm sticky top-0 z-10">
   <div class="flex-1">
-    <a class="btn btn-ghost text-xl" style="color: black;" href="{{ url_for('routes.home') }}">NustBites</a>
+    <a
+      class="btn btn-ghost text-xl"
+      style="color: black"
+      href="{{ url_for('routes.home') }}"
+      >NustBites</a
+    >
   </div>
 
   <div class="flex-none items-center">
@@ -13,22 +15,46 @@
     <div class="dropdown dropdown-end flex items-center">
       <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
         <div class="indicator">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-            viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+            />
           </svg>
-          <span id="bucket-count-icon" class="badge badge-sm indicator-item">0</span>
+          <span id="bucket-count-icon" class="badge badge-sm indicator-item"
+            >0</span
+          >
         </div>
       </div>
-      <div tabindex="0" class="card card-compact dropdown-content bg-base-100 mt-0 w-60 shadow">
+      <div
+        tabindex="0"
+        class="card card-compact dropdown-content bg-base-100 mt-0 w-60 shadow"
+      >
         <div class="card-body">
           <span class="text-lg font-bold">Bucket</span>
-          <span id="bucket-summary" class="text-info" style="color: black; font-weight: bold;">Subtotal: Rs. 0</span>
+          <span
+            id="bucket-summary"
+            class="text-info"
+            style="color: black; font-weight: bold"
+            >Subtotal: Rs. 0</span
+          >
 
           <div class="card-actions">
-            <button class="btn btn-block" style="background-color: #e4002b; color: whitesmoke;" onclick="openBucketModal()">View Bucket</button>
-
+            <button
+              class="btn btn-block"
+              style="background-color: #e4002b; color: whitesmoke"
+              onclick="openBucketModal()"
+            >
+              View Bucket
+            </button>
           </div>
         </div>
       </div>
@@ -40,44 +66,61 @@
 <dialog id="bucket_modal" class="modal">
   <div class="modal-box w-96 max-w-full">
     <form method="dialog">
-      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+        ✕
+      </button>
     </form>
     <h3 class="font-bold text-lg mb-4">Your Bucket</h3>
     <ul id="bucket-items-list" class="space-y-2"></ul>
-    <div class="text-right font-semibold mt-4" id="bucket-total">Total: Rs. 0</div>
+    <div class="text-right font-semibold mt-4" id="bucket-total">
+      Total: Rs. 0
+    </div>
   </div>
 </dialog>
-{% endblock %}
-
-{% block content %}
-<input type="hidden" id="restaurantId" value="{{ restaurant_id }}">
+{% endblock %} {% block content %}
+<input type="hidden" id="restaurantId" value="{{ restaurant_id }}" />
 <nav id="category-navbar" class="flex flex-wrap gap-2 p-4"></nav>
 <div id="menu-list" class="p-4 space-y-10"></div>
 {% endblock %}
+
+<style>
+  #category-navbar .btn.btn-outline.btn-sm:hover,
+  #category-navbar .btn.btn-outline.btn-sm:focus {
+    background-color: #e4002b !important;
+    color: white !important;
+    border-color: #e4002b !important;
+    box-shadow: none !important;
+    background-image: none !important;
+  }
+</style>
+
 
 {% block scripts %}
 <script>
   let bucket = [];
 
   function updateBucketDisplay() {
-    const iconCount = document.getElementById('bucket-count-icon');
-    const summary = document.getElementById('bucket-summary');
+    const iconCount = document.getElementById("bucket-count-icon");
+    const summary = document.getElementById("bucket-summary");
     const totalItems = bucket.reduce((sum, item) => sum + item.quantity, 0);
-    const totalPrice = bucket.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalPrice = bucket.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
     iconCount.textContent = totalItems;
     summary.textContent = `Subtotal: Rs. ${totalPrice}`;
   }
 
   function renderModal() {
-    const list = document.getElementById('bucket-items-list');
-    const total = document.getElementById('bucket-total');
-    list.innerHTML = '';
+    const list = document.getElementById("bucket-items-list");
+    const total = document.getElementById("bucket-total");
+    list.innerHTML = "";
     let subtotal = 0;
 
     if (bucket.length === 0) {
       list.innerHTML = '<li class="text-gray-500">Your bucket is empty.</li>';
     } else {
-      bucket.forEach(item => {
+      bucket.forEach((item) => {
         subtotal += item.price * item.quantity;
         list.appendChild(createBucketItemElement(item));
       });
@@ -87,8 +130,8 @@
   }
 
   function createBucketItemElement(item) {
-    const li = document.createElement('li');
-    li.className = 'flex items-center justify-between gap-2';
+    const li = document.createElement("li");
+    li.className = "flex items-center justify-between gap-2";
     li.innerHTML = `
       <span class="truncate">${item.name}</span>
       <div class="flex items-center gap-2">
@@ -103,106 +146,151 @@
 
   function openBucketModal() {
     renderModal();
-    document.getElementById('bucket_modal').showModal();
+    document.getElementById("bucket_modal").showModal();
   }
 
   function attachMenuButtons() {
-  document.querySelectorAll('[data-action]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = parseInt(btn.dataset.id);
-      const action = btn.dataset.action;
-      const name = btn.dataset.name;
-      const price = parseFloat(btn.dataset.price);
-      let qtyEl = document.getElementById(`qty-${id}`);
-      let quantity = parseInt(qtyEl?.textContent || '1');
+    document.querySelectorAll("[data-action]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = parseInt(btn.dataset.id);
+        const action = btn.dataset.action;
+        const name = btn.dataset.name;
+        const price = parseFloat(btn.dataset.price);
+        let qtyEl = document.getElementById(`qty-${id}`);
+        let quantity = parseInt(qtyEl?.textContent || "1");
 
-      let item = bucket.find(i => i.id === id);
+        let item = bucket.find((i) => i.id === id);
 
-      if (action === 'increase') {
-        quantity = Math.min(99, quantity + 1);
-        qtyEl.textContent = quantity;
-      } else if (action === 'decrease') {
-        quantity = Math.max(1, quantity - 1);
-        qtyEl.textContent = quantity;
-      } else if (action === 'add') {
-        if (item) {
-          item.quantity += quantity;
-        } else {
-          bucket.push({ id, name, price, quantity });
+        if (action === "increase") {
+          quantity = Math.min(99, quantity + 1);
+          qtyEl.textContent = quantity;
+        } else if (action === "decrease") {
+          quantity = Math.max(1, quantity - 1);
+          qtyEl.textContent = quantity;
+        } else if (action === "add") {
+          if (item) {
+            item.quantity += quantity;
+          } else {
+            bucket.push({ id, name, price, quantity });
+          }
+          qtyEl.textContent = 1; // Reset
+          updateBucketDisplay();
         }
-        qtyEl.textContent = 1; // Reset
-        updateBucketDisplay();
-      }
+      });
     });
-  });
-}
+  }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const restaurantId = document.getElementById('restaurantId').value;
+  document.addEventListener("DOMContentLoaded", () => {
+    const restaurantId = document.getElementById("restaurantId").value;
     fetch(`/api/menu?restaurant_id=${restaurantId}`)
-      .then(response => response.json())
-      .then(data => {
-        const menuContainer = document.getElementById('menu-list');
-        const navbar = document.getElementById('category-navbar');
+      .then((response) => response.json())
+      .then((data) => {
+        const menuContainer = document.getElementById("menu-list");
+        const navbar = document.getElementById("category-navbar");
+        const categories = Object.entries(data);
 
-        Object.entries(data).forEach(([category, items]) => {
+        categories.forEach(([category, items], idx) => {
           const section = createCategorySection(category, items);
           menuContainer.appendChild(section);
+
           navbar.appendChild(createCategoryButton(category, section));
         });
 
         attachMenuButtons();
       })
-      .catch(err => console.error('Menu fetch error:', err));
+      .catch((err) => console.error("Menu fetch error:", err));
   });
 
   function createCategorySection(category, items) {
-    const section = document.createElement('section');
-    section.id = category.replace(/\s+/g, '-').toLowerCase();
-    const heading = document.createElement('h2');
-    heading.className = 'text-2xl font-bold mb-4 text-gray-800';
+    const section = document.createElement("section");
+    section.id = category.replace(/\s+/g, "-").toLowerCase();
+
+    const heading = document.createElement("h2");
+    heading.className = "mb-2";
+    heading.style.fontSize = "2.5rem";
+    heading.style.fontWeight = "900";
+    heading.style.textTransform = "uppercase";
+    heading.style.color = "black";
     heading.textContent = category;
 
-    const grid = document.createElement('div');
-    grid.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6';
+    // Red divider
+    const divider = document.createElement("div");
+    divider.style.width = "140px";
+    divider.style.height = "6px";
+    divider.style.background = "#E4002B";
+    divider.style.borderRadius = "2px";
+    divider.style.marginTop = "10px";
+    divider.style.marginBottom = "24px";
 
-    items.forEach(item => grid.appendChild(createMenuCard(item)));
+    const grid = document.createElement("div");
+    grid.className = "grid gap-6"; // Tailwind gap for consistent spacing
+    grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(220px, 1fr))";
+    grid.style.justifyItems = "start"; // Align cards to the left
+
+    items.forEach((item) => grid.appendChild(createMenuCard(item)));
 
     section.appendChild(heading);
+    section.appendChild(divider);
     section.appendChild(grid);
     return section;
   }
 
   function createCategoryButton(category, section) {
-    const btn = document.createElement('button');
+    const btn = document.createElement("button");
     btn.textContent = category;
-    btn.className = 'btn btn-outline btn-sm';
-    btn.onclick = () => section.scrollIntoView({ behavior: 'smooth' });
+    btn.className = "btn btn-outline btn-sm";
+    btn.onclick = () => section.scrollIntoView({ behavior: "smooth" });
     return btn;
   }
   function createMenuCard(item) {
-  const card = document.createElement('div');
-  card.className = 'card bg-white shadow rounded-lg overflow-hidden';
-  card.innerHTML = `
-    <figure class="h-40 bg-gray-100">
-      <img src="${item.image_url || 'https://via.placeholder.com/150'}" class="object-cover w-full h-full" alt="${item.name}">
-    </figure>
-    <div class="card-body p-4">
-      <h2 class="card-title text-lg">${item.name}</h2>
-      <p class="text-sm text-gray-600">${item.description || ''}</p>
-      <p class="font-bold text-red-600 mt-2">Rs. ${item.price}</p>
-      <div class="flex items-center gap-2 mt-2">
-        <button class="btn btn-xs btn-outline" data-id="${item.id}" data-action="decrease">−</button>
-        <span id="qty-${item.id}" class="w-4 text-center">1</span>
-        <button class="btn btn-xs btn-outline" data-id="${item.id}" data-action="increase">+</button>
-      </div>
-     <button class="btn btn-sm mt-2 w-full text-white" style="background-color: #E4002B;" data-id="${item.id}" data-name="${item.name}" data-price="${item.price}" data-action="add">
-  Add to Bucket
-</button>
-</div>
-  `;
-  return card;
-}
+    const card = document.createElement("div");
+    card.className =
+      "bg-white shadow rounded-lg overflow-hidden flex flex-col w-full max-w-xs";
 
+    card.innerHTML = `
+    <!-- Image Container -->
+    <div class="h-40 bg-gray-100 flex justify-center items-center">
+      <img src="${
+        item.image_url || "https://via.placeholder.com/300x200?text=No+Image"
+      }"
+           alt="${item.name}"
+           class="object-contain max-h-32 w-auto" />
+    </div>
+
+    <!-- Content -->
+    <div class="bg-gray-100 p-4 flex flex-col h-full">
+  <div class="flex flex-col items-center flex-grow">
+    <h2 class="text-lg font-semibold text-center">${item.name}</h2>
+    <p class="text-sm text-gray-600 text-center mt-1">${
+      item.description || ""
+    }</p>
+    <p class="font-bold text-red-600 mt-2">Rs. ${item.price}</p>
+
+    <div class="flex items-center gap-2 mt-3">
+      <button class="btn btn-xs btn-outline" data-id="${
+        item.id
+      }" data-action="decrease">−</button>
+      <span id="qty-${item.id}" class="w-4 text-center">1</span>
+      <button class="btn btn-xs btn-outline" data-id="${
+        item.id
+      }" data-action="increase">+</button>
+    </div>
+  </div>
+
+  <button 
+    class="btn btn-sm w-full text-white mt-auto"
+    style="background-color: #E4002B;"
+    data-id="${item.id}" 
+    data-name="${item.name}" 
+    data-price="${item.price}" 
+    data-action="add">
+    Add to Bucket
+  </button>
+</div>
+
+  `;
+
+    return card;
+  }
 </script>
 {% endblock %}
