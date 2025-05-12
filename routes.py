@@ -16,7 +16,7 @@ def home():
 # =====================
 # Login Page
 # =====================
-@routes_bp.route('/login', methods=['GET', 'POST'])
+@routes_bp.route('/login', methods=[ 'POST'])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('routes.home'))
@@ -29,7 +29,7 @@ def login():
             flash('Login successful!', 'success')
             # Redirect based on role
             if user.role == Role.ADMIN:
-                return redirect(url_for('admin.dashboard'))  # hypothetical admin blueprint
+                return redirect(url_for('admin.index'))  # hypothetical admin blueprint
             else:
                 return redirect(url_for('routes.home'))  # general user home
         flash('Invalid credentials', 'danger')
@@ -38,7 +38,7 @@ def login():
 # =====================
 # Register Page
 # =====================
-@routes_bp.route('/register', methods=['GET', 'POST'])
+@routes_bp.route('/register', methods=['POST'])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
@@ -76,3 +76,11 @@ def menu_page(restaurant_id):
     The restaurant_id will be passed to frontend JS for API fetching.
     """
     return render_template('menu.html', restaurant_id=restaurant_id, user=current_user)
+
+
+
+
+@routes_bp.route('/checkout', methods=['GET', 'POST'])
+def checkout():
+    return render_template('checkout.html', user=current_user)
+

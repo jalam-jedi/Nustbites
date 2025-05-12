@@ -5,6 +5,7 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 # API to fetch full menu
 @api_bp.route('/menu', methods=['GET'])
+@login_required
 def get_menu_items():
     restaurant_id = request.args.get('restaurant_id', type=int)
 

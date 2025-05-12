@@ -2,12 +2,7 @@
 block navbar %}
 <div class="navbar bg-base-100 shadow-sm sticky top-0 z-10">
   <div class="flex-1">
-    <a
-      class="btn btn-ghost text-xl"
-      style="color: black"
-      href="{{ url_for('routes.home') }}"
-      >NustBites</a
-    >
+    <a class="btn btn-ghost text-xl hover:!bg-transparent hover:!text-current" href="{{ url_for('routes.home') }}">NustBites</a>
   </div>
 
   <div class="flex-none items-center">
@@ -94,7 +89,6 @@ block navbar %}
   }
 </style>
 
-
 {% block scripts %}
 <script>
   let bucket = [];
@@ -127,6 +121,9 @@ block navbar %}
     }
 
     total.textContent = `Total: Rs. ${subtotal}`;
+
+    // Attach event listeners to bucket item buttons
+    attachBucketItemListeners();
   }
 
   function createBucketItemElement(item) {
@@ -144,9 +141,43 @@ block navbar %}
     return li;
   }
 
+  function attachBucketItemListeners() {
+    document
+      .querySelectorAll("#bucket-items-list [data-action]")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = parseInt(btn.dataset.id);
+          const action = btn.dataset.action;
+
+          let item = bucket.find((i) => i.id === id);
+          if (!item) return;
+
+          if (action === "increase") {
+            item.quantity = Math.min(99, item.quantity + 1);
+          } else if (action === "decrease") {
+            item.quantity = Math.max(1, item.quantity - 1);
+            if (item.quantity === 0) {
+              bucket = bucket.filter((i) => i.id !== id);
+            }
+          } else if (action === "remove") {
+            bucket = bucket.filter((i) => i.id !== id);
+          }
+
+          updateBucketDisplay();
+          renderModal();
+        });
+      });
+  }
+
   function openBucketModal() {
     renderModal();
-    document.getElementById("bucket_modal").showModal();
+    const modal = document.getElementById("bucket_modal");
+    modal.showModal();
+
+    // Add event listener for modal close
+    modal.addEventListener("close", () => {
+      updateBucketDisplay();
+    });
   }
 
   function attachMenuButtons() {
@@ -236,61 +267,110 @@ block navbar %}
   }
 
   function createCategoryButton(category, section) {
-    const btn = document.createElement("button");
-    btn.textContent = category;
-    btn.className = "btn btn-outline btn-sm";
-    btn.onclick = () => section.scrollIntoView({ behavior: "smooth" });
-    return btn;
-  }
-  function createMenuCard(item) {
-    const card = document.createElement("div");
-    card.className =
-      "bg-white shadow rounded-lg overflow-hidden flex flex-col w-full max-w-xs";
-
-    card.innerHTML = `
-    <!-- Image Container -->
-    <div class="h-40 bg-gray-100 flex justify-center items-center">
-      <img src="${
-        item.image_url || "https://via.placeholder.com/300x200?text=No+Image"
-      }"
-           alt="${item.name}"
-           class="object-contain max-h-32 w-auto" />
-    </div>
-
-    <!-- Content -->
-    <div class="bg-gray-100 p-4 flex flex-col h-full">
-  <div class="flex flex-col items-center flex-grow">
-    <h2 class="text-lg font-semibold text-center">${item.name}</h2>
-    <p class="text-sm text-gray-600 text-center mt-1">${
-      item.description || ""
-    }</p>
-    <p class="font-bold text-red-600 mt-2">Rs. ${item.price}</p>
-
-    <div class="flex items-center gap-2 mt-3">
-      <button class="btn btn-xs btn-outline" data-id="${
-        item.id
-      }" data-action="decrease">−</button>
-      <span id="qty-${item.id}" class="w-4 text-center">1</span>
-      <button class="btn btn-xs btn-outline" data-id="${
-        item.id
-      }" data-action="increase">+</button>
-    </div>
+  const btn = document.createElement("button");
+  btn.textContent = category;
+  
+  // Add custom styling for black outline and KFC red hover with white text
+  btn.className = "btn btn-sm";
+  btn.style.border = "1px solid black";
+  btn.style.backgroundColor = "transparent";
+  btn.style.color = "black";
+  btn.style.transition = "all 0.3s ease";
+  
+  // KFC red color on hover with white text
+  btn.onmouseover = () => {
+    btn.style.backgroundColor = "#E4002B"; // KFC red color
+    btn.style.color = "white";
+    btn.style.borderColor = "#E4002B";
+  };
+  
+  // Return to outline style on mouseout
+  btn.onmouseout = () => {
+    btn.style.backgroundColor = "transparent";
+    btn.style.color = "black";
+    btn.style.borderColor = "black";
+  };
+  
+  btn.onclick = () => section.scrollIntoView({ behavior: "smooth" });
+  return btn;
+}
+function createMenuCard(item) {
+  const card = document.createElement("div");
+  card.className =
+    "bg-white shadow rounded-lg overflow-hidden flex flex-col w-full max-w-xs";
+  
+  // Create card HTML structure
+  card.innerHTML = `
+  <!-- Image Container -->
+  <div class="h-40 bg-gray-100 flex justify-center items-center">
+    <img src="${
+      item.image_url || "https://via.placeholder.com/300x200?text=No+Image"
+    }"
+         alt="${item.name}"
+         class="object-contain max-h-32 w-auto" />
   </div>
-
-  <button 
-    class="btn btn-sm w-full text-white mt-auto"
-    style="background-color: #E4002B;"
-    data-id="${item.id}" 
-    data-name="${item.name}" 
-    data-price="${item.price}" 
-    data-action="add">
-    Add to Bucket
-  </button>
-</div>
-
+  <!-- Content -->
+  <div class="bg-gray-100 p-4 flex flex-col h-full">
+    <div class="flex flex-col items-center flex-grow">
+      <h2 class="text-lg font-semibold text-center">${item.name}</h2>
+      <p class="text-sm text-gray-600 text-center mt-1">${
+        item.description || ""
+      }</p>
+      <p class="font-bold text-red-600 mt-2">Rs. ${item.price}</p>
+      <div class="flex items-center gap-2 mt-3">
+        <button class="quantity-btn" data-id="${
+          item.id
+        }" data-action="decrease">−</button>
+        <span id="qty-${item.id}" class="w-4 text-center">1</span>
+        <button class="quantity-btn" data-id="${
+          item.id
+        }" data-action="increase">+</button>
+      </div>
+    </div>
+    <button
+      class="btn btn-sm w-full text-white mt-auto"
+      style="background-color: #E4002B;"
+      data-id="${item.id}"
+      data-name="${item.name}"
+      data-price="${item.price}"
+      data-action="add">
+      Add to Bucket
+    </button>
+  </div>
   `;
-
-    return card;
-  }
+  
+  // After card is created, apply custom styles to the quantity buttons
+  setTimeout(() => {
+    const quantityButtons = card.querySelectorAll('.quantity-btn');
+    quantityButtons.forEach(btn => {
+      // Apply default styling
+      btn.style.border = "1px solid black";
+      btn.style.backgroundColor = "transparent";
+      btn.style.color = "black";
+      btn.style.borderRadius = "0.375rem";
+      btn.style.padding = "0 0.5rem";
+      btn.style.fontSize = "0.875rem";
+      btn.style.lineHeight = "1.5rem";
+      btn.style.transition = "all 0.3s ease";
+      btn.style.cursor = "pointer";
+      
+      // Add hover effects
+      btn.addEventListener('mouseover', () => {
+        btn.style.backgroundColor = "#000000"; // KFC red
+        btn.style.color = "white";
+        btn.style.borderColor = "#000000";
+      });
+      
+      // Return to default on mouseout
+      btn.addEventListener('mouseout', () => {
+        btn.style.backgroundColor = "transparent";
+        btn.style.color = "black";
+        btn.style.borderColor = "black";
+      });
+    });
+  }, 0);
+  
+  return card;
+}
 </script>
 {% endblock %}
