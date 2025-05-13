@@ -55,6 +55,7 @@ class Restaurant(db.Model):
     __tablename__ = 'restaurant'  # Explicitly set table name
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(8), unique=True, nullable=True)  # Restaurant code, e.g., 'K' for KFC
 
     __table_args__ = {'extend_existing': True}  # Allow redefining if the table exists
 
@@ -100,7 +101,7 @@ class Menu(db.Model):
 # Orders Table (Stores Main Order Info, Items are Stored in a Parseable Format)
 class Order(db.Model):
     __tablename__ = 'order'  
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(64), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
     rider_id = db.Column(db.Integer, db.ForeignKey('rider.id'), nullable=True)  # Assigned later
@@ -115,7 +116,7 @@ class Order(db.Model):
 class Payment(db.Model):
     __tablename__ = 'payment'  
     id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    order_id = db.Column(db.String(64), db.ForeignKey('order.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     amount = db.Column(db.DECIMAL(10,2), nullable=False)
     status = db.Column(Enum(PaymentStatus), default=PaymentStatus.PENDING, nullable=False)
@@ -129,7 +130,7 @@ class Complaint(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
-    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=True)  # Foreign Key to Order Table
+    order_id = db.Column(db.String(64), db.ForeignKey('order.id'), nullable=True)  # Foreign Key to Order Table
     description = db.Column(db.Text, nullable=False)
     status = db.Column(Enum(ComplaintStatus), default=ComplaintStatus.PENDING, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

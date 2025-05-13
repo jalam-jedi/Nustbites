@@ -80,7 +80,54 @@ def menu_page(restaurant_id):
 
 
 
-@routes_bp.route('/checkout', methods=['GET', 'POST'])
+@routes_bp.route('/order_details', methods=['GET', 'POST'])
+@login_required
+def order_details():
+    bucket = session.get('bucket', [])
+    print("DEBUG: bucket in session:", bucket)
+    for item in bucket:
+        print(f"Item: {item}")
+    total = sum(item['price'] * item['quantity'] for item in bucket)
+    locations = Location.query.all()
+    return render_template(
+        'order_details.html',
+        bucket=bucket,
+        total=total,
+        user=current_user,
+        locations=locations
+    )
+@routes_bp.route('/checkout', methods=['POST'])
+@login_required
 def checkout():
-    return render_template('checkout.html', user=current_user)
+    bucket = session.get('bucket', [])
+    total = sum(item['price'] * item['quantity'] for item in bucket)
+    delivery_type = request.form.get('delivery_type')
+    location_id = request.form.get('location_id')
+    special_instructions = request.form.get('special_instructions')
+    # Optionally, get location name from DB
+    location = Location.query.get(location_id)
+    return render_template(
+        'checkout.html',
+        bucket=bucket,
+        total=total,
+        delivery_type=delivery_type,
+        location=location,
+        special_instructions=special_instructions,
+        user=current_user
+    )
 
+@routes_bp.route('/save_bucket', methods=['POST'])
+@login_required
+def save_bucket():
+    bucket = request.json.get('bucket', [])
+    session['bucket'] = bucket
+    return jsonify({'success': True})
+
+
+@routes_bp.route('/account')
+@login_required
+def account():
+    user = current_user
+    # Query the user's orders, sorted by most recent
+    orders = Order.query.filter_by(user_id=user.id).order_by(Order.created_at.desc()).all()
+    return render_template('account.html', user=user, orders=orders)

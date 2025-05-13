@@ -1,0 +1,97 @@
+{% extends 'basic.html' %} {% block title %}Order Details{% endblock %} {% block
+content %}
+<div
+  class="w-full max-w-2xl mx-auto mt-8 bg-gray-100 p-2 sm:p-6 rounded-lg shadow overflow-x-auto"
+>
+  <h2 class="text-2xl font-bold mb-4 border-b-2 border-red-600 pb-2">
+    YOUR BUCKET
+  </h2>
+  <div class="w-full overflow-x-auto">
+    <table class="w-full mb-4 text-sm sm:text-base">
+      <thead>
+        <tr class="bg-gray-300 text-gray-700">
+          <th class="py-2 px-2 sm:px-4 text-left">ITEM</th>
+          <th class="py-2 px-2 sm:px-4 text-center">PRICE</th>
+          <th class="py-2 px-2 sm:px-4 text-center">QTY.</th>
+          <th class="py-2 px-2 sm:px-4 text-center">TOTAL</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in bucket %}
+        <tr class="bg-white">
+          <td class="py-2 px-2 sm:px-4">{{ item.name }}</td>
+          <td class="py-2 px-2 sm:px-4 text-center">{{ item.price }}</td>
+          <td class="py-2 px-2 sm:px-4 text-center">{{ item.quantity }}</td>
+          <td class="py-2 px-2 sm:px-4 text-center">
+            {{ item.price * item.quantity }}
+          </td>
+          <td class="py-2 px-2 sm:px-4 text-center">
+            <!-- Remove button (optional, for review only) -->
+            <button class="text-red-600 hover:text-red-800 font-bold text-lg">
+              ✕
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="bg-gray-200 font-bold">
+          <td colspan="3" class="py-2 px-2 sm:px-4 text-right">
+            Total Amount (Rs.)
+          </td>
+          <td class="py-2 px-2 sm:px-4 text-center">{{ total }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <form method="POST" action="{{ url_for('routes.checkout') }}">
+    <div class="mb-4">
+      <label class="font-bold block mb-1"
+        >Choose your delivery type: <span class="text-red-600">*</span></label
+      >
+      <select name="delivery_type" class="w-full p-2 rounded border" required>
+        <option value="">Select delivery type</option>
+        <option value="standard">Standard Delivery</option>
+        <option value="express">Express Delivery</option>
+      </select>
+      <div class="mt-2 text-sm text-gray-700">
+        <span class="font-bold text-red-600">Standard Delivery:</span> Orders
+        will be processed after the current ordering slot ends.<br />
+        <span class="font-bold text-red-600">Express Delivery:</span> Orders are
+        processed as soon as they are placed.
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="font-bold block mb-1"
+        >Choose your nearby Location: <span class="text-red-600">*</span></label
+      >
+      <select name="location_id" class="w-full p-2 rounded border" required>
+        <option value="">Choose your delivery location</option>
+        {% for loc in locations %}
+        <option value="{{ loc.id }}">{{ loc.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <label class="font-bold block mb-1">Special Instructions:</label>
+      <textarea
+        name="special_instructions"
+        class="w-full p-2 rounded border"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <button
+      type="submit"
+      class="w-full bg-gray-500 text-white font-bold py-2 rounded hover:bg-gray-700"
+    >
+      CHECKOUT
+    </button>
+  </form>
+</div>
+{% endblock %}
