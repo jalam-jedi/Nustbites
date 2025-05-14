@@ -1,12 +1,28 @@
-{% extends 'basic.html' %}
-{% block title %}Order Checkout{% endblock %}
+{% extends 'basic.html' %} {% block title %}Order Checkout{% endblock %} {%
+block content %}
+<div
+  class="max-w-2xl mx-auto mt-8 bg-gray-100 p-6 rounded-lg shadow"
+  style="color: #333"
+>
+  <h2
+    class="text-2xl font-bold mb-4 border-b-2 border-red-600 pb-2"
+    style="color: #333"
+  >
+    ORDER CHECKOUT
+  </h2>
 
-{% block content %}
-<div class="max-w-2xl mx-auto mt-8 bg-gray-100 p-6 rounded-lg shadow">
-  <h2 class="text-2xl font-bold mb-4 border-b-2 border-red-600 pb-2">ORDER CHECKOUT</h2>
+  {% with messages = get_flashed_messages(with_categories=true) %} {% if
+  messages %} {% set category, message = messages[-1] %}
+  <div
+    class="mb-4 p-4 rounded {% if category == 'error' %}bg-red-100 text-red-700 {% elif category == 'success' %}bg-green-100 text-green-700 {% else %}bg-blue-100 text-blue-700{% endif %}"
+  >
+    {{ message }}
+  </div>
+  {% endif %} {% endwith %}
+
   <table class="w-full mb-4">
     <thead>
-      <tr class="bg-gray-300 text-gray-700">
+      <tr class="bg-gray-300" style="color: #333">
         <th class="py-2 px-4 text-left">ITEM</th>
         <th class="py-2 px-4 text-center">PRICE</th>
         <th class="py-2 px-4 text-center">QTY</th>
@@ -15,7 +31,7 @@
     </thead>
     <tbody>
       {% for item in bucket %}
-      <tr class="bg-white">
+      <tr class="bg-white" style="color: #333">
         <td class="py-2 px-4">{{ item.name }}</td>
         <td class="py-2 px-4 text-center">{{ item.price }}</td>
         <td class="py-2 px-4 text-center">{{ item.quantity }}</td>
@@ -24,7 +40,7 @@
       {% endfor %}
     </tbody>
     <tfoot>
-      <tr class="bg-gray-200 font-bold">
+      <tr class="bg-gray-200 font-bold" style="color: #333">
         <td colspan="3" class="py-2 px-4 text-right">Total Amount (Rs.)</td>
         <td class="py-2 px-4 text-center">{{ total }}</td>
       </tr>
@@ -32,47 +48,65 @@
   </table>
 
   <!-- Promo Code Section -->
-  <div class="bg-gray-200 rounded-lg p-4 mb-4">
-    <div class="font-bold text-lg mb-2 text-red-600 border-b-2 border-red-600 pb-1">PROMO CODE</div>
-    <div class="mb-2 text-gray-700">Enter promo code if you have any:</div>
+  <div class="bg-gray-200 rounded-lg p-4 mb-4" style="color: #333">
+    <div
+      class="font-bold text-lg mb-2 text-red-600 border-b-2 border-red-600 pb-1"
+    >
+      PROMO CODE
+    </div>
+    <div class="mb-2">Enter promo code if you have any:</div>
     <form class="flex gap-2">
-      <input type="text" name="promo_code" class="input input-bordered flex-1" placeholder="Enter promo code">
-      <button type="submit" class="btn bg-red-600 text-white font-bold px-6">APPLY</button>
+      <input
+        type="text"
+        name="promo_code"
+        class="input input-bordered flex-1"
+        placeholder="Enter promo code"
+        style="color: #333"
+      />
+      <button type="submit" class="btn bg-red-600 text-white font-bold px-6">
+        APPLY
+      </button>
     </form>
   </div>
 
   <!-- Location and Special Instructions -->
-  <div class="bg-gray-200 rounded-lg p-4 mb-4">
+  <div class="bg-gray-200 rounded-lg p-4 mb-4" style="color: #333">
     <div class="mb-2">
       <span class="font-bold text-red-600">Location:</span>
-      <span class="text-gray-800">{{ location.name if location else 'N/A' }}</span>
+      <span>{{ location.name if location else 'N/A' }}</span>
     </div>
     <div>
       <span class="font-bold text-red-600">Special Instructions:</span>
-      <span class="text-gray-800">{{ special_instructions or 'None' }}</span>
+      <span>{{ special_instructions or 'None' }}</span>
     </div>
   </div>
 
   <!-- Payment Instructions -->
-  <div class="bg-gray-200 rounded-lg p-4 mb-4">
-    <div class="font-bold text-lg mb-2 text-red-600 border-b-2 border-red-600 pb-1">PAYMENT INSTRUCTIONS:</div>
-    <div class="mb-2">
-      Please transfer the total amount of <span class="font-bold text-red-600">Rs.{{ total }}</span> to one of the following accounts:
+  <div class="bg-gray-200 rounded-lg p-4 mb-4" style="color: #333">
+    <div
+      class="font-bold text-lg mb-2 text-red-600 border-b-2 border-red-600 pb-1"
+    >
+      PAYMENT INSTRUCTIONS:
     </div>
-    <ul class="mb-2 text-gray-800">
+    <div class="mb-2">
+      Please transfer the total amount of
+      <span class="font-bold text-red-600">Rs.{{ total }}</span> to one of the
+      following accounts:
+    </div>
+    <ul class="mb-2">
       <li class="mb-1">
-        <span class="font-bold">SadaPay</span><br>
-        Account Number: 0000000000000000 <br>
+        <span class="font-bold">SadaPay</span><br />
+        Account Number: 0000000000000000 <br />
         Account Name: ABC
       </li>
       <li class="mb-1">
-        <span class="font-bold">MayaPay</span><br>
-        Account Number:0000000000000000 <br>
+        <span class="font-bold">MayaPay</span><br />
+        Account Number:0000000000000000 <br />
         Account Name: ABC
       </li>
       <li>
-        <span class="font-bold">Meezan Bank</span><br>
-        Account Number: 0000000000000000 <br>
+        <span class="font-bold">Meezan Bank</span><br />
+        Account Number: 0000000000000000 <br />
         Account Name: ABC
       </li>
     </ul>
@@ -80,19 +114,116 @@
       Only payments sent to the specified bank accounts will be accepted.*
     </div>
     <div class="text-xs text-red-600 mb-2">
-      *Payments sent to any other account, such as JazzCash or EasyPaisa, will not be received and cannot be refunded.
+      *Payments sent to any other account, such as JazzCash or EasyPaisa, will
+      not be received and cannot be refunded.
     </div>
     <div class="mb-2">
-      After completing the transfer, please upload your payment slip/screenshot by clicking the <span class="font-bold">Upload Slip</span> below. Make sure that the file is no more than 2.5 MB.
+      After completing the transfer, please upload your payment slip/screenshot
+      by clicking the <span class="font-bold">Upload Slip</span> below. Make
+      sure that the file is no more than 2.5 MB.
     </div>
-    
-      <div class="flex items-center gap-4 mb-4">
-        <input type="file" name="payment_slip" class="file-input file-input-bordered file-input-sm" accept="image/*,.pdf">
-        <button type="submit" class="btn bg-green-600 text-white font-bold px-6">Upload Slip</button>
-      </div>
-      <div class="mb-4 text-gray-600 text-sm">File uploaded: <span id="file-uploaded">none</span></div>
-      <button type="submit" class="btn w-full bg-gray-500 text-white font-bold py-2 rounded hover:bg-gray-700">Confirm Order</button>
-    
+
+    <form
+      method="POST"
+      action="{{ url_for('routes.create_order') }}"
+      enctype="multipart/form-data"
+      class="flex flex-col items-start gap-4 mb-4 w-full"
+      id="uploadForm"
+      onsubmit="return validateForm()"
+    >
+      <input
+        type="hidden"
+        name="restaurant_id"
+        value="{{ bucket[0].restaurant_id }}"
+      />
+      <input
+        type="hidden"
+        name="special_instructions"
+        value="{{ special_instructions }}"
+      />
+      <input type="hidden" name="delivery_type" value="{{ delivery_type }}" />
+      <input
+        type="hidden"
+        name="location_id"
+        value="{{ location.id if location else '' }}"
+      />
+      <label
+        for="payment-slip-upload"
+        class="btn bg-[#333] text-white font-bold px-6 cursor-pointer hover:bg-black"
+      >
+        Upload Slip
+        <input
+          type="file"
+          id="payment-slip-upload"
+          name="payment_slip"
+          class="hidden"
+          accept="image/*,.pdf"
+          onchange="validateFile(this)"
+          required
+        />
+      </label>
+      <span id="file-uploaded" class="text-sm"></span>
+      <span id="file-error" class="text-sm text-red-600"></span>
+      <button
+        type="submit"
+        class="btn w-full bg-[#333] text-white font-bold py-2 rounded hover:bg-black"
+      >
+        Confirm Order
+      </button>
+    </form>
   </div>
 </div>
 {% endblock %}
+
+<script>
+  document.getElementById("file-uploaded").textContent = "";
+  document.getElementById("file-error").textContent = "";
+
+  function validateFile(input) {
+    const maxSize = 2.5 * 1024 * 1024; // 2.5MB in bytes
+    const file = input.files[0];
+    const errorElement = document.getElementById("file-error");
+    const uploadElement = document.getElementById("file-uploaded");
+
+    if (file) {
+      if (file.size > maxSize) {
+        errorElement.textContent = `File size exceeds 2.5MB limit`;
+        input.value = ""; // Clear the file input
+        uploadElement.textContent = "";
+        return false;
+      }
+
+      errorElement.textContent = "";
+      uploadElement.textContent = file.name;
+      return true;
+    }
+
+    uploadElement.textContent = "";
+    return false;
+  }
+
+  function validateForm() {
+    const fileInput = document.getElementById("payment-slip-upload");
+    const fileError = document.getElementById("file-error");
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+      fileError.textContent = "Please upload a payment slip";
+      return false;
+    }
+
+    return validateFile(fileInput);
+  }
+  
+  if (performance && performance.navigation && performance.navigation.type === 2) {
+    // Type 2 means "back_forward"
+    location.reload(true);
+  }
+  // For modern browsers (Navigation Timing Level 2)
+  if (performance && performance.getEntriesByType) {
+    const navEntries = performance.getEntriesByType("navigation");
+    if (navEntries.length && navEntries[0].type === "back_forward") {
+      location.reload(true);
+    }
+  }
+
+</script>

@@ -1,15 +1,30 @@
 {% extends 'basic.html' %} {% block title %}Order Details{% endblock %} {% block
 content %}
+<script>
+  // If the server has cleared the session flag, redirect away
+  fetch("/get_bucket")
+    .then((res) => res.json())
+    .then((data) => {
+      // You can also create a dedicated endpoint to check the session flag
+      if (!data.bucket || data.bucket.length === 0) {
+        window.location.href = "/"; // or your menu page
+      }
+    });
+</script>
 <div
   class="w-full max-w-2xl mx-auto mt-8 bg-gray-100 p-2 sm:p-6 rounded-lg shadow overflow-x-auto"
+  style="color: #333"
 >
-  <h2 class="text-2xl font-bold mb-4 border-b-2 border-red-600 pb-2">
+  <h2
+    class="text-2xl font-bold mb-4 border-b-2 border-red-600 pb-2"
+    style="color: #333"
+  >
     YOUR BUCKET
   </h2>
   <div class="w-full overflow-x-auto">
     <table class="w-full mb-4 text-sm sm:text-base">
       <thead>
-        <tr class="bg-gray-300 text-gray-700">
+        <tr class="bg-gray-200" style="color: #333">
           <th class="py-2 px-2 sm:px-4 text-left">ITEM</th>
           <th class="py-2 px-2 sm:px-4 text-center">PRICE</th>
           <th class="py-2 px-2 sm:px-4 text-center">QTY.</th>
@@ -19,7 +34,7 @@ content %}
       </thead>
       <tbody>
         {% for item in bucket %}
-        <tr class="bg-white">
+        <tr class="bg-white" style="color: #333">
           <td class="py-2 px-2 sm:px-4">{{ item.name }}</td>
           <td class="py-2 px-2 sm:px-4 text-center">{{ item.price }}</td>
           <td class="py-2 px-2 sm:px-4 text-center">{{ item.quantity }}</td>
@@ -36,7 +51,7 @@ content %}
         {% endfor %}
       </tbody>
       <tfoot>
-        <tr class="bg-gray-200 font-bold">
+        <tr class="bg-gray-200 font-bold" style="color: #333">
           <td colspan="3" class="py-2 px-2 sm:px-4 text-right">
             Total Amount (Rs.)
           </td>
@@ -47,18 +62,27 @@ content %}
     </table>
   </div>
 
-  <form method="POST" action="{{ url_for('routes.checkout') }}">
+  <form
+    method="POST"
+    action="{{ url_for('routes.checkout') }}"
+    style="color: #333"
+  >
     <div class="mb-4">
-      <label class="font-bold block mb-1"
+      <label class="font-bold block mb-1" style="color: #333"
         >Choose your delivery type: <span class="text-red-600">*</span></label
       >
-      <select name="delivery_type" class="w-full p-2 rounded border" required>
+      <select
+        name="delivery_type"
+        class="w-full p-2 rounded border"
+        required
+        style="color: #333"
+      >
         <option value="">Select delivery type</option>
-        <option value="standard">Standard Delivery</option>
-        <option value="express">Express Delivery</option>
+        <option value="standard">Standard Delivery (Rs. 150)</option>
+        <option value="express">Express Delivery (Rs. 300)</option>
       </select>
-      <div class="mt-2 text-sm text-gray-700">
-        <span class="font-bold text-red-600">Standard Delivery:</span> Orders
+      <div class="mt-2 text-sm" style="color: #333">
+        <span class="font-bold text-red-600">Standard Delivery: </span> Orders
         will be processed after the current ordering slot ends.<br />
         <span class="font-bold text-red-600">Express Delivery:</span> Orders are
         processed as soon as they are placed.
@@ -66,10 +90,15 @@ content %}
     </div>
 
     <div class="mb-4">
-      <label class="font-bold block mb-1"
+      <label class="font-bold block mb-1" style="color: #333"
         >Choose your nearby Location: <span class="text-red-600">*</span></label
       >
-      <select name="location_id" class="w-full p-2 rounded border" required>
+      <select
+        name="location_id"
+        class="w-full p-2 rounded border"
+        required
+        style="color: #333"
+      >
         <option value="">Choose your delivery location</option>
         {% for loc in locations %}
         <option value="{{ loc.id }}">{{ loc.name }}</option>
@@ -78,20 +107,40 @@ content %}
     </div>
 
     <div class="mb-4">
-      <label class="font-bold block mb-1">Special Instructions:</label>
+      <label class="font-bold block mb-1" style="color: #333"
+        >Special Instructions:</label
+      >
       <textarea
         name="special_instructions"
         class="w-full p-2 rounded border"
         rows="3"
+        style="color: #333"
       ></textarea>
     </div>
 
     <button
       type="submit"
-      class="w-full bg-gray-500 text-white font-bold py-2 rounded hover:bg-gray-700"
+      class="w-full bg-[#333] text-white font-bold py-2 rounded hover:bg-black"
     >
       CHECKOUT
     </button>
   </form>
 </div>
+<script>
+  if (
+    performance &&
+    performance.navigation &&
+    performance.navigation.type === 2
+  ) {
+    // Type 2 means "back_forward"
+    location.reload(true);
+  }
+  // For modern browsers (Navigation Timing Level 2)
+  if (performance && performance.getEntriesByType) {
+    const navEntries = performance.getEntriesByType("navigation");
+    if (navEntries.length && navEntries[0].type === "back_forward") {
+      location.reload(true);
+    }
+  }
+</script>
 {% endblock %}

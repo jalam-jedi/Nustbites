@@ -1,30 +1,163 @@
 <!-- basic.html -->
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-<head>
-  <meta charset="UTF-8" />
-  <title>{{ title if title else 'NustBites' }}</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ title if title else 'NustBites' }}</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.20/dist/full.min.css" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.4.20/dist/full.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='scripts/script.js') }}"></script>
 
-  {% block style %}{% endblock %}
-</head>
-<body class="min-h-screen bg-base-200 text-base-content">
+    {% block style %}{% endblock %}
+  </head>
+  <body class="min-h-screen bg-base-200 text-[#333]">
+    <!-- Drawer Sidebar -->
+    <div
+      id="drawer-backdrop"
+      class="fixed inset-0 bg-black bg-opacity-40 z-40 hidden"
+      onclick="closeDrawer()"
+    ></div>
+    <aside
+      id="drawer-sidebar"
+      class="fixed top-0 left-0 h-full w-72 bg-gray-100 shadow-lg z-50 transform -translate-x-full transition-transform duration-200 flex flex-col"
+    >
+      <div
+        class="flex items-center justify-between p-6 border-b border-gray-300"
+      >
+        <span class="font-extrabold text-2xl tracking-wide" style="color: #333"
+          >RESTAURANTS</span
+        >
+        <button
+          onclick="closeDrawer()"
+          class="text-gray-500 hover:text-gray-700 focus:outline-none"
+        >
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-6 pt-2 flex flex-col gap-4">
+        {% for restaurant in restaurants %}
+        <a
+          href="{{ url_for('routes.menu_page', restaurant_id=restaurant.id) }}"
+          class="block rounded-lg bg-gray-300 px-6 py-3 text-lg font-medium text-[#333] hover:bg-red-200 transition"
+        >
+          {{ restaurant.name }}
+        </a>
+        {% endfor %}
+      </div>
+    </aside>
 
-  <!-- Navbar (fallback) -->
-  {% block navbar %}
-  <div class="navbar bg-base-100 shadow-sm sticky top-0 z-10">
-    
-    <a class="btn btn-ghost text-xl hover:!bg-transparent hover:!text-current" href="{{ url_for('routes.home') }}">NustBites</a>
-    
-  </div>
-  {% endblock %}
-
-  {% block content %}{% endblock %}
-  {% block scripts %}
-
-  {% endblock %}
-</body>
+    <div class="flex flex-col min-h-screen">
+      <!-- Standard Navbar -->
+      {% block navbar %}
+      <div class="navbar bg-base-100 shadow-sm sticky top-0 z-30 text-[#333]">
+        <div class="navbar-start">
+          <button
+            id="drawer-btn"
+            class="btn btn-ghost lg:hidden"
+            onclick="openDrawer()"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h8m-8 6h16"
+              />
+            </svg>
+          </button>
+          <a
+            class="btn btn-ghost text-xl hover:!bg-transparent hover:!text-current text-[#333]"
+            href="{{ url_for('routes.home') }}"
+            >NustBites</a
+          >
+        </div>
+        <div class="navbar-center hidden lg:flex">
+          <ul class="menu menu-horizontal px-1 text-[#333]">
+            <li>
+              <a href="{{ url_for('routes.home') }}" class="text-[#333]"
+                >Home</a
+              >
+            </li>
+            <li>
+              <a href="{{ url_for('routes.account') }}" class="text-[#333]"
+                >My Account</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="navbar-end">
+          {% if current_user.is_authenticated %}
+          <div class="dropdown dropdown-end">
+            <div
+              tabindex="0"
+              role="button"
+              class="btn btn-ghost btn-circle avatar"
+            >
+              <div
+                class="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-xl font-bold text-white font-sans select-none"
+                style="line-height: 2.5rem"
+              >
+                {{ current_user.username[0]|upper }}
+              </div>
+            </div>
+            <ul
+              tabindex="0"
+              class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52 text-[#333]"
+            >
+              <li>
+                <a href="{{ url_for('routes.account') }}" class="text-[#333]"
+                  >My Account</a
+                >
+              </li>
+            </ul>
+          </div>
+          {% else %}
+          <a
+            href="{{ url_for('routes.login') }}"
+            class="btn btn-ghost text-[#333]"
+            >Login</a
+          >
+          {% endif %}
+        </div>
+      </div>
+      {% endblock %} {% block content %}{% endblock %} {% block scripts %}{%
+      endblock %}
+    </div>
+    <script>
+      function openDrawer() {
+        document
+          .getElementById("drawer-sidebar")
+          .classList.remove("-translate-x-full");
+        document.getElementById("drawer-backdrop").classList.remove("hidden");
+      }
+      function closeDrawer() {
+        document
+          .getElementById("drawer-sidebar")
+          .classList.add("-translate-x-full");
+        document.getElementById("drawer-backdrop").classList.add("hidden");
+      }
+    </script>
+  </body>
 </html>

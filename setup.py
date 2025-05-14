@@ -2,8 +2,9 @@ from flask import Flask
 from extensions import *
 from routes import routes_bp
 from viewmodels import *
-from models import *
 from api_routes import api_bp
+from flask_admin.menu import MenuLink
+
 def create_app():
     app = Flask(__name__)
 
@@ -21,6 +22,12 @@ def create_app():
     admin.add_view(UserModelView(User, db.session))
     admin.add_view(RestaurantModelView(Restaurant, db.session))
     admin.add_view(MenuModelView(Menu, db.session, name='Menu Items'))
+    admin.add_view(RiderModelView(Rider, db.session))
+    admin.add_view(LocationModelView(Location, db.session))
+    admin.add_view(ExtraChargesModelView(ExtraCharges, db.session))
+    admin.add_view(PaymentModelView(Payment, db.session))
+    admin.add_view(PromoCodeModelView(PromoCode, db.session))
+    admin.add_link(MenuLink(name='Orders Dashboard', url='/admin/orderdashboard'))
 
     @login_manager.user_loader
     def load_user(user_id):

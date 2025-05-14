@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+
+# Project specific
+temp/
+credentials.json
+
+# Add the specific file you want to exclude here
+# For example, if you want to exclude a specific file, add its path:
+# path/to/your/file.txt 

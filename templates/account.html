@@ -1,46 +1,232 @@
-{% extends 'basic.html' %}
-{% block title %}Account{% endblock %}
-
-{% block content %}
+{% extends 'basic.html' %} {% block title %}Account{% endblock %} {% block
+content %}
 <div class="max-w-3xl mx-auto mt-8">
-  <h2 class="text-3xl font-bold mb-4">Hello {{ user.username|capitalize }}!</h2>
-  <div class="bg-gray-200 rounded-lg p-6 mb-8 flex flex-col sm:flex-row items-center gap-6">
-    <div class="w-32 h-32 rounded-full bg-gray-400 flex items-center justify-center text-4xl font-bold text-white">
+  <h2 class="text-3xl font-bold mb-4" style="color: #333">
+    Hello {{ user.username|capitalize }}!
+  </h2>
+  <div
+    class="bg-gray-200 rounded-lg p-6 mb-8 flex flex-col sm:flex-row items-center gap-6"
+  >
+    <div
+      class="w-32 h-32 rounded-full bg-gray-400 flex items-center justify-center text-4xl font-bold text-white"
+    >
       <!-- Account Logo: Use initials or an icon -->
       {{ user.username[0]|upper }}
     </div>
     <div class="flex-1">
-      <div class="font-bold text-xl mb-2">YOUR DETAILS</div>
-      <div class="mb-1"><span class="font-bold">Full Name:</span> {{ user.username }}</div>
-      <div class="mb-1"><span class="font-bold">Email:</span> {{ user.email }}</div>
-      <div class="mb-1"><span class="font-bold">WhatsApp Number:</span> {{ user.whatsapp_no }}</div>
-      
+      <div class="font-bold text-xl mb-2" style="color: #333">YOUR DETAILS</div>
+      <div class="mb-1">
+        <span class="font-bold" style="color: #333">Full Name:</span> {{
+        user.username }}
+      </div>
+      <div class="mb-1">
+        <span class="font-bold" style="color: #333">Email:</span> {{ user.email
+        }}
+      </div>
+      <div class="mb-1">
+        <span class="font-bold" style="color: #333">WhatsApp Number:</span> {{
+        user.whatsapp_no }}
+      </div>
+    </div>
+    <div class="mt-4 sm:mt-0">
+      <a
+        href="{{ url_for('routes.logout') }}"
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+      >
+        <svg
+          class="w-5 h-5 mr-2"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+        Logout
+      </a>
     </div>
   </div>
 
   <div>
-    <h3 class="text-2xl font-bold mb-2 border-b-2 border-red-600 pb-1">ORDER HISTORY</h3>
+    <h3
+      class="text-2xl font-bold mb-2 border-b-2 border-red-600 pb-1"
+      style="color: #333"
+    >
+      ORDER HISTORY
+    </h3>
     <div class="space-y-4">
       {% for order in orders %}
-      <div class="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row sm:items-center justify-between">
+      <div
+        class="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row sm:items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+        onclick="showOrderDetails('{{ order.id }}')"
+      >
         <div>
-          <div class="font-bold">ID: {{ order.order_code }}</div>
-          <div class="text-gray-600 text-sm">{{ order.created_at.strftime('%d/%m/%y %I:%M %p') }}</div>
+          <div class="font-bold" style="color: #333">
+            Order ID: {{ order.id }}
+          </div>
+          <div class="text-[#333] text-sm">
+            {{ order.created_at.strftime('%d/%m/%y %I:%M %p') }}
+          </div>
         </div>
         <div>
-          {% if order.status == 'pending' %}
-            <span class="badge bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded">PENDING</span>
-          {% elif order.status == 'delivered' %}
-            <span class="badge bg-green-200 text-green-700 font-bold px-4 py-2 rounded">DELIVERED</span>
+          {% if order.status.value == 'pending' %}
+          <span
+            class="badge bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded"
+            >PENDING</span
+          >
+          {% elif order.status.value == 'delivered' %}
+          <span
+            class="badge bg-green-200 text-green-700 font-bold px-4 py-2 rounded"
+            >DELIVERED</span
+          >
+          {% elif order.status.value == 'verified' %}
+          <span
+            class="badge bg-blue-200 text-blue-700 font-bold px-4 py-2 rounded"
+            >VERIFIED</span
+          >
+          {% elif order.status.value == 'payment_verification' %}
+          <span
+            class="badge bg-yellow-200 text-yellow-700 font-bold px-4 py-2 rounded"
+            >PAYMENT VERIFICATION</span
+          >
           {% else %}
-            <span class="badge bg-yellow-200 text-yellow-700 font-bold px-4 py-2 rounded">{{ order.status|upper }}</span>
+          <span
+            class="badge bg-yellow-200 text-yellow-700 font-bold px-4 py-2 rounded"
+            >{{ order.status.value|upper }}</span
+          >
           {% endif %}
         </div>
       </div>
       {% else %}
-      <div class="text-gray-500">No orders yet.</div>
+      <div class="text-[#333]">No orders yet.</div>
       {% endfor %}
     </div>
   </div>
 </div>
+
+<!-- Order Details Modal -->
+<div
+  id="orderDetailsModal"
+  class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
+>
+  <div
+    class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+  >
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold" style="color: #333">Order Details</h3>
+      <button
+        onclick="closeOrderDetails()"
+        class="text-gray-500 hover:text-gray-700"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+    </div>
+    <div id="orderDetailsContent"></div>
+  </div>
+</div>
+
+<script>
+  function showOrderDetails(orderId) {
+    fetch(`/order_details/${orderId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        const modal = document.getElementById("orderDetailsModal");
+        const content = document.getElementById("orderDetailsContent");
+
+        // Format the order details
+        const items = JSON.parse(data.items);
+        const total = items.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+
+        content.innerHTML = `
+          <div class="space-y-4">
+            <div>
+              <span class="font-bold">Order ID:</span> ${data.id}
+            </div>
+            <div>
+              <span class="font-bold">Date:</span> ${new Date(
+                data.created_at
+              ).toLocaleString()}
+            </div>
+            <div>
+              <span class="font-bold">Status:</span> 
+              <span class="badge ${getStatusClass(
+                data.status
+              )}">${data.status.toUpperCase()}</span>
+            </div>
+            <div>
+              <span class="font-bold">Special Instructions:</span> ${
+                data.special_instructions || "None"
+              }
+            </div>
+            <div class="border-t pt-4">
+              <h4 class="font-bold mb-2">Items:</h4>
+              <div class="space-y-2">
+                ${items
+                  .map(
+                    (item) => `
+                  <div class="flex justify-between">
+                    <span>${item.name} x ${item.quantity}</span>
+                    <span>Rs. ${item.price * item.quantity}</span>
+                  </div>
+                `
+                  )
+                  .join("")}
+              </div>
+            </div>
+            <div class="border-t pt-4 font-bold flex justify-between">
+              <span>Total:</span>
+              <span>Rs. ${total}</span>
+            </div>
+          </div>
+        `;
+
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("Failed to load order details");
+      });
+  }
+
+  function closeOrderDetails() {
+    const modal = document.getElementById("orderDetailsModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+
+  function getStatusClass(status) {
+    switch (status) {
+      case "pending":
+        return "bg-gray-300 text-gray-700";
+      case "delivered":
+        return "bg-green-200 text-green-700";
+      case "verified":
+        return "bg-blue-200 text-blue-700";
+      case "payment_verification":
+        return "bg-yellow-200 text-yellow-700";
+      default:
+        return "bg-yellow-200 text-yellow-700";
+    }
+  }
+</script>
 {% endblock %}

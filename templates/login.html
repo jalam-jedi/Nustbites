@@ -1,15 +1,80 @@
-{% extends "basic.html" %} {% block style %}
-<link
-  rel="stylesheet"
-  href="{{ url_for('static',filename = 'css/styles.css') }}"
-/>
-{% endblock %} {% block content %}
-<h1>Log in</h1>
-<div class="form-container">
-  <form action="" method="POST">
-    {{ form.hidden_tag() }} {{ form.username }} {{ form.password }} {{
-    form.submit }}
-  </form>
-  <a href="/register">Don't have an account? Register now</a>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
+    <title>Login</title>
+    <style>
+      body {
+        background: #f5f7fa;
+        font-family: "Segoe UI", Arial, sans-serif;
+      }
+      .login-container {
+        max-width: 400px;
+        margin: 60px auto;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+        padding: 2.5rem 2rem 2rem 2rem;
+      }
+      .login-title {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        letter-spacing: 1px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        margin-bottom: 1.2rem;
+        font-size: 1rem;
+      }
+      .login-btn {
+        width: 100%;
+        background: #e53935;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 0;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .login-btn:hover {
+        background: #b71c1c;
+      }
+      .register-link {
+        display: block;
+        text-align: center;
+        margin-top: 1.2rem;
+        color: #283593;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .register-link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-title">Log in</div>
+      <form action="" method="POST">
+        {{ form.hidden_tag() }} {{ form.username(class_="form-control",
+        placeholder="Username") }} {{ form.password(class_="form-control",
+        placeholder="Password") }} {{ form.submit(class_="login-btn") }}
+      </form>
+      <a href="/register" class="register-link"
+        >Don't have an account? Register now</a
+      >
+    </div>
+  </body>
+</html>

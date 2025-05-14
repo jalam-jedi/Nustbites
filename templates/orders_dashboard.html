@@ -1,0 +1,232 @@
+{% extends 'basic.html' %}
+{% block content %}
+<style>
+    .restaurant-tab {
+        border-radius: 8px;
+        padding: 8px 24px;
+        margin-right: 10px;
+        font-weight: bold;
+        color: #fff;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        font-size: 1.1rem;
+    }
+    .restaurant-tab.active { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .restaurant-KFC { background: #e53935; }
+    .restaurant-Crumble { background: #283593; }
+    .restaurant-Layers { background: #bfa046; }
+    .restaurant-SoftSwirl { background: #23444b; }
+    .section-title { font-size: 2rem; font-weight: bold; margin-top: 2rem; border-bottom: 4px solid #b71c1c; display: inline-block; }
+    .order-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 18px; padding: 18px; transition: box-shadow 0.2s; cursor: pointer; }
+    .order-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .order-status { border-radius: 12px; padding: 4px 18px; font-weight: bold; font-size: 1rem; float: right; }
+    .status-DELIVERED { background: #c8e6c9; color: #388e3c; }
+    .status-PENDING { background: #e0e0e0; color: #424242; }
+    .status-REFUNDED { background: #e1bee7; color: #7b1fa2; }
+    .order-details { background: #f5f5f5; border-radius: 8px; margin-top: 12px; padding: 18px; }
+    .order-details label { font-weight: bold; }
+    .order-details input, .order-details select, .order-details textarea { margin-bottom: 10px; }
+    .order-details-row { display: flex; flex-wrap: wrap; gap: 2rem; }
+    .order-details-col { flex: 1 1 300px; }
+</style>
+
+<div class="mb-4">
+    {% for restaurant in restaurants %}
+        <button class="restaurant-tab restaurant-{{ restaurant.name|replace(' ', '') }}{% if loop.first %} active{% endif %}" data-restaurant-id="{{ restaurant.id }}">{{ restaurant.name }}</button>
+    {% endfor %}
+</div>
+
+<div id="orders-container">
+    {% for restaurant in restaurants %}
+        <div class="restaurant-orders" id="restaurant-{{ restaurant.id }}" {% if not loop.first %}style="display:none;"{% endif %}>
+            <div class="section-title">{{ restaurant.name }} – CURRENT ORDERS</div>
+            <div class="mb-4">
+                {% set current_orders = orders|selectattr('restaurant_id', 'equalto', restaurant.id)|rejectattr('status', 'in', ['DELIVERED', 'REFUNDED'])|list %}
+                {% if current_orders %}
+                    {% for order in current_orders %}
+                        <div class="order-card" data-order-id="{{ order.id }}">
+                            <b>ID:</b> {{ order.id }}<span class="order-status status-{{ order.status.name }}">{{ order.status.name }}</span><br>
+                            <small>{{ order.created_at.strftime('%d/%m/%y %I:%M %p') }}</small>
+                            <div class="order-details" style="display:none; margin-top: 1.5rem;">
+                                <form class="order-edit-form" data-order-id="{{ order.id }}">
+                                    <div class="order-details-row" style="gap: 2.5rem;">
+                                        <div class="order-details-col">
+                                            <label>Order Items:</label>
+                                            <ul style="margin-bottom: 1rem;">
+                                              {% for item in order.menu_items %}
+                                                <li>
+                                                  <b>{{ item.menu.name }}</b> (ID: {{ item.menu.id }})<br>
+                                                  Qty: {{ item.quantity }}<br>
+                                                  Price: {{ item.menu.price }}
+                                                </li>
+                                              {% endfor %}
+                                            </ul>
+                                            <label>User Email:</label>
+                                            <input type="email" name="user_email" value="{{ order.user.email }}" class="form-control mb-2" />
+                                            <label>Total Amount:</label>
+                                            <input type="number" name="amount" value="{{ order.payment.amount if order.payment else '' }}" class="form-control mb-2" />
+                                            <label>Special Instructions:</label>
+                                            <textarea name="special_instructions" class="form-control mb-2">{{ order.special_instructions }}</textarea>
+                                            <label>Location:</label>
+                                            <input type="text" name="location" value="{{ order.location.name if order.location else '' }}" class="form-control mb-2" />
+                                            <label>Delivery Type:</label>
+                                            <input type="text" name="delivery_type" value="{{ order.delivery_type }}" class="form-control mb-2" />
+                                            <label>Promo Code:</label>
+                                            <input type="text" name="promo_code" value="{{ order.promo_code or 'NONE' }}" class="form-control mb-2" />
+                                            <label>Promo Type:</label>
+                                            <input type="text" name="promo_type" value="{{ order.promo_type or 'None' }}" class="form-control mb-2" />
+                                            <label>Discount:</label>
+                                            <input type="number" name="discount" value="{{ order.discount or 0 }}" class="form-control mb-2" />
+                                            <label>Reason:</label>
+                                            <textarea name="reason" class="form-control mb-2">{{ order.reason or '' }}</textarea>
+                                        </div>
+                                        <div class="order-details-col">
+                                            <label>Status:</label>
+                                            <select name="status" class="form-control mb-2">
+                                                {% for status in order.status.__class__ %}
+                                                    <option value="{{ status.name }}" {% if order.status == status %}selected{% endif %}>{{ status.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label>Order No:</label>
+                                            <input type="text" name="order_no" value="{{ order.order_no or '' }}" class="form-control mb-2" />
+                                            <label>Cost Price:</label>
+                                            <input type="number" name="cost_price" value="{{ order.cost_price or '' }}" class="form-control mb-2" />
+                                            <label>Delivery Price:</label>
+                                            <input type="number" name="delivery_price" value="{{ order.delivery_price or '' }}" class="form-control mb-2" />
+                                            <label>Assign Rider:</label>
+                                            <select name="rider_id" class="form-control mb-2">
+                                                <option value="">-- Select Rider --</option>
+                                                {% for rider in riders %}
+                                                    <option value="{{ rider.id }}" {% if order.rider_id == rider.id %}selected{% endif %}>{{ rider.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-muted">No current orders for {{ restaurant.name }}.</div>
+                {% endif %}
+            </div>
+            <div class="section-title">{{ restaurant.name }} – PAST ORDERS</div>
+            <div>
+                {% set past_orders = orders|selectattr('restaurant_id', 'equalto', restaurant.id)|selectattr('status', 'in', ['DELIVERED', 'REFUNDED'])|list %}
+                {% if past_orders %}
+                    {% for order in past_orders %}
+                        <div class="order-card" data-order-id="{{ order.id }}">
+                            <b>ID:</b> {{ order.id }}<span class="order-status status-{{ order.status.name }}">{{ order.status.name }}</span><br>
+                            <small>{{ order.created_at.strftime('%d/%m/%y %I:%M %p') }}</small>
+                            <div class="order-details" style="display:none; margin-top: 1.5rem;">
+                                <form class="order-edit-form" data-order-id="{{ order.id }}">
+                                    <div class="order-details-row" style="gap: 2.5rem;">
+                                        <div class="order-details-col">
+                                            <label>Order Items:</label>
+                                            <ul style="margin-bottom: 1rem;">
+                                              {% for item in order.menu_items %}
+                                                <li>
+                                                  <b>{{ item.menu.name }}</b> (ID: {{ item.menu.id }})<br>
+                                                  Qty: {{ item.quantity }}<br>
+                                                  Price: {{ item.menu.price }}
+                                                </li>
+                                              {% endfor %}
+                                            </ul>
+                                            <label>User Email:</label>
+                                            <input type="email" name="user_email" value="{{ order.user.email }}" class="form-control mb-2" />
+                                            <label>Total Amount:</label>
+                                            <input type="number" name="amount" value="{{ order.payment.amount if order.payment else '' }}" class="form-control mb-2" />
+                                            <label>Special Instructions:</label>
+                                            <textarea name="special_instructions" class="form-control mb-2">{{ order.special_instructions }}</textarea>
+                                            <label>Location:</label>
+                                            <input type="text" name="location" value="{{ order.location.name if order.location else '' }}" class="form-control mb-2" />
+                                            <label>Delivery Type:</label>
+                                            <input type="text" name="delivery_type" value="{{ order.delivery_type }}" class="form-control mb-2" />
+                                            <label>Promo Code:</label>
+                                            <input type="text" name="promo_code" value="{{ order.promo_code or 'NONE' }}" class="form-control mb-2" />
+                                            <label>Promo Type:</label>
+                                            <input type="text" name="promo_type" value="{{ order.promo_type or 'None' }}" class="form-control mb-2" />
+                                            <label>Discount:</label>
+                                            <input type="number" name="discount" value="{{ order.discount or 0 }}" class="form-control mb-2" />
+                                            <label>Reason:</label>
+                                            <textarea name="reason" class="form-control mb-2">{{ order.reason or '' }}</textarea>
+                                        </div>
+                                        <div class="order-details-col">
+                                            <label>Status:</label>
+                                            <select name="status" class="form-control mb-2">
+                                                {% for status in order.status.__class__ %}
+                                                    <option value="{{ status.name }}" {% if order.status == status %}selected{% endif %}>{{ status.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <label>Order No:</label>
+                                            <input type="text" name="order_no" value="{{ order.order_no or '' }}" class="form-control mb-2" />
+                                            <label>Cost Price:</label>
+                                            <input type="number" name="cost_price" value="{{ order.cost_price or '' }}" class="form-control mb-2" />
+                                            <label>Delivery Price:</label>
+                                            <input type="number" name="delivery_price" value="{{ order.delivery_price or '' }}" class="form-control mb-2" />
+                                            <label>Assign Rider:</label>
+                                            <select name="rider_id" class="form-control mb-2">
+                                                <option value="">-- Select Rider --</option>
+                                                {% for rider in riders %}
+                                                    <option value="{{ rider.id }}" {% if order.rider_id == rider.id %}selected{% endif %}>{{ rider.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-muted">No past orders for {{ restaurant.name }}.</div>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+// Tab switching
+const tabs = document.querySelectorAll('.restaurant-tab');
+tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.restaurant-orders').forEach(div => div.style.display = 'none');
+        document.getElementById('restaurant-' + this.dataset.restaurantId).style.display = '';
+    });
+});
+// Expand/collapse order details
+const orderCards = document.querySelectorAll('.order-card');
+orderCards.forEach(card => {
+    card.addEventListener('click', function(e) {
+        if (!e.target.closest('form')) {
+            const details = card.querySelector('.order-details');
+            details.style.display = details.style.display === 'none' ? '' : 'none';
+        }
+    });
+});
+// AJAX save for all fields
+const forms = document.querySelectorAll('.order-edit-form');
+forms.forEach(form => {
+    form.addEventListener('change', function(e) {
+        e.preventDefault();
+        const orderId = form.dataset.orderId;
+        const formData = new FormData(form);
+        fetch(`/admin/update_order/${orderId}`, {
+            method: 'POST',
+            body: formData,
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Optionally show a success indicator
+            } else {
+                alert('Update failed: ' + (data.error || 'Unknown error'));
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

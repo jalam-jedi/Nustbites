@@ -56,6 +56,7 @@ class Restaurant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     code = db.Column(db.String(8), unique=True, nullable=True)  # Restaurant code, e.g., 'K' for KFC
+    total_orders = db.Column(db.Integer, default=0, nullable=False)
 
     __table_args__ = {'extend_existing': True}  # Allow redefining if the table exists
 
@@ -102,6 +103,7 @@ class Menu(db.Model):
 class Order(db.Model):
     __tablename__ = 'order'  
     id = db.Column(db.String(64), primary_key=True)
+    sequence = db.Column(db.Integer, nullable=False)  # For tracking order numbers per restaurant
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
     rider_id = db.Column(db.Integer, db.ForeignKey('rider.id'), nullable=True)  # Assigned later
@@ -110,7 +112,31 @@ class Order(db.Model):
     special_instructions = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    __table_args__ = {'extend_existing': True}  
+    # Relationships for template access
+    user = db.relationship('User', backref='orders')
+    restaurant = db.relationship('Restaurant', backref='orders')
+    rider = db.relationship('Rider', backref='orders')
+
+    __table_args__ = {'extend_existing': True}
+
+    @staticmethod
+    def generate_order_id(restaurant_id):
+        """Generate a new order ID using restaurant code and sequence number"""
+        restaurant = Restaurant.query.get(restaurant_id)
+        if not restaurant or not restaurant.code:
+            raise ValueError("Restaurant not found or has no code")
+        
+        # Get the last sequence number for this restaurant
+        last_order = Order.query.filter_by(restaurant_id=restaurant_id).order_by(Order.sequence.desc()).first()
+        sequence = (last_order.sequence + 1) if last_order else 1
+        
+        # Format: RESTAURANT_CODE-SEQUENCE (e.g., K-000001)
+        return f"{restaurant.code}-{str(sequence).zfill(6)}"
+
+    @property
+    def display_code(self):
+        """Return the display code for the order"""
+        return self.id
 
 # Payments Table (Tracks Order Payments)
 class Payment(db.Model):

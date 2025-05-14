@@ -1,4 +1,4 @@
-from flask import Flask,Blueprint, url_for, redirect, request, render_template, jsonify,flash,session
+from flask import Flask,Blueprint, url_for, redirect, request, render_template, jsonify,flash,session,current_app,make_response
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_migrate import Migrate
@@ -12,6 +12,13 @@ from flask_admin.contrib.sqla import ModelView
 import json
 from flask_admin.form import Select2Field
 from werkzeug.security import generate_password_hash
+from werkzeug.utils import secure_filename
+import os
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from flask_admin.menu import MenuLink
+
 
 # Create Flask app
 app = Flask(__name__)
@@ -21,6 +28,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:60029032.comQ@loca
 
 # Other configurations
 app.config['SECRET_KEY'] = '60029032.comQWERTY'
+
+SERVICE_ACCOUNT_FILE = 'credentials.json'
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
+FOLDER_ID = '1nylYr7oOTrWdwJAncIkYbhYYAcIHRldw'  # Just the folder ID, not the full URL
 
 # Initialize extensions
 db = SQLAlchemy()

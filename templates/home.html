@@ -1,56 +1,61 @@
-{% extends "basic.html" %}
+{% extends "basic.html" %} {% block style %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/styles.css') }}"
+/>
+{% endblock %} {% block content %}
 
-{% block style %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
-{% endblock %}
+<h1
+  class="text-3xl font-bold mt-16 mb-2"
+  style="color: #222; text-align: left; margin-left: 2.5rem"
+>
+  Our Restaurants
+</h1>
+<div
+  class="mb-10"
+  style="
+    height: 6px;
+    width: 180px;
+    background: #111;
+    border-radius: 3px;
+    margin-left: 2.5rem;
+  "
+></div>
 
-{% block content %}
-
-<div class="flex justify-center mt-24 bg-white">
-  <div class="bg-gray-200/30 backdrop-blur-md border border-gray-300 p-8 rounded-2xl shadow-xl text-center max-w-lg w-full">
-    <h1 class="text-4xl font-bold text-gray-800 mb-2">Welcome to Nustbites</h1>
-    <p class="text-lg text-gray-700">Serving your Cravings</p>
-  </div>
-</div>
-
-<h1 class="text-3xl font-bold text-center my-10">Our Restaurants</h1>
-
-<div id="restaurants-container" class="flex flex-wrap justify-center gap-6">
+<div
+  id="restaurants-container"
+  class="flex flex-wrap gap-8 justify-start ml-10"
+>
   <!-- Restaurants will be loaded dynamically here -->
 </div>
 
-{% endblock %}
-
-{% block scripts %}
+{% endblock %} {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    fetch('/api/restaurants')
-        .then(response => response.json())
-        .then(data => {
-            const container = document.getElementById('restaurants-container');
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("/api/restaurants")
+      .then((response) => response.json())
+      .then((data) => {
+        const container = document.getElementById("restaurants-container");
 
-            data.forEach(restaurant => {
-                const restaurantCard = document.createElement('div');
-                restaurantCard.className = 'card w-60 bg-base-100 shadow-xl';
-
-                restaurantCard.innerHTML = `
-                    <figure class="p-4">
-                        <img src="${restaurant.image_url || 'https://via.placeholder.com/150'}" alt="${restaurant.name}" class="w-full h-40 object-cover rounded-lg">
-                    </figure>
-                    <div class="card-body text-center">
-                        <h3 class="text-xl font-semibold">${restaurant.name}</h3>
-                        <button onclick="goToMenu(${restaurant.id})" class="btn btn-primary mt-4 w-full">View Menu</button>
-                    </div>
+        data.forEach((restaurant) => {
+          const logoPath = `/static/images/${restaurant.name.toLowerCase()}/home_logo.svg`;
+          const restaurantCard = document.createElement("div");
+          restaurantCard.className =
+            "flex flex-col items-center cursor-pointer";
+          restaurantCard.style.width = "300px";
+          restaurantCard.style.height = "180px";
+          restaurantCard.innerHTML = `
+                    <img src="${logoPath}" alt="${restaurant.name}" class="w-full h-full object-contain rounded-lg" style="background: #fff; border: 2px solid #eee;" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x180?text=No+Logo'">
                 `;
+          restaurantCard.onclick = () => goToMenu(restaurant.id);
+          container.appendChild(restaurantCard);
+        });
+      })
+      .catch((error) => console.error("Error fetching restaurants:", error));
+  });
 
-                container.appendChild(restaurantCard);
-            });
-        })
-        .catch(error => console.error('Error fetching restaurants:', error));
-});
-
-function goToMenu(restaurantId) {
+  function goToMenu(restaurantId) {
     window.location.href = `/menu/${restaurantId}`;
-}
+  }
 </script>
 {% endblock %}

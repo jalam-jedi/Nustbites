@@ -1,6 +1,12 @@
 let bucket = [];
 
 function saveBucketAndGoToOrderDetails() {
+  if (!bucket || bucket.length === 0) {
+    alert(
+      "Please add at least one item to your bucket before proceeding to order details."
+    );
+    return;
+  }
   fetch("/save_bucket", {
     method: "POST",
     headers: {
@@ -8,13 +14,22 @@ function saveBucketAndGoToOrderDetails() {
     },
     body: JSON.stringify({ bucket }),
   })
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return res.json();
+    })
     .then((data) => {
       if (data.success) {
         window.location.href = "/order_details";
       } else {
-        alert("Failed to save bucket!");
+        throw new Error(data.error || "Failed to save bucket");
       }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Failed to save bucket. Please try again.");
     });
 }
 
@@ -35,39 +50,92 @@ function updateBucketDisplay() {
 function attachMenuButtons() {
   document.querySelectorAll("[data-action]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const id = parseInt(btn.dataset.id);
-      const action = btn.dataset.action;
-      const name = btn.dataset.name;
-      const price = parseFloat(btn.dataset.price);
-      let qtyEl = document.getElementById(`qty-${id}`);
-      let quantity = parseInt(qtyEl?.textContent || "1");
+      try {
+        const id = parseInt(btn.dataset.id);
+        const action = btn.dataset.action;
+        const name = btn.dataset.name;
+        const price = parseFloat(btn.dataset.price);
+        const restaurantId = parseInt(
+          document.getElementById("restaurantId").value
+        );
 
-      let item = bucket.find((i) => i.id === id);
-
-      if (action === "increase") {
-        quantity = Math.min(99, quantity + 1);
-        qtyEl.textContent = quantity;
-      } else if (action === "decrease") {
-        quantity = Math.max(1, quantity - 1);
-        qtyEl.textContent = quantity;
-      } else if (action === "add") {
-        if (item) {
-          item.quantity += quantity;
-        } else {
-          bucket.push({ id, name, price, quantity });
+        if (isNaN(id) || isNaN(price) || isNaN(restaurantId)) {
+          throw new Error("Invalid item data");
         }
-        qtyEl.textContent = 1; // Reset
-        updateBucketDisplay();
+
+        let qtyEl = document.getElementById(`qty-${id}`);
+        let quantity = parseInt(qtyEl?.textContent || "1");
+
+        let item = bucket.find((i) => i.id === id);
+
+        if (action === "increase") {
+          quantity = Math.min(99, quantity + 1);
+          qtyEl.textContent = quantity;
+        } else if (action === "decrease") {
+          quantity = Math.max(1, quantity - 1);
+          qtyEl.textContent = quantity;
+        } else if (action === "add") {
+          if (item) {
+            item.quantity += quantity;
+          } else {
+            bucket.push({
+              id,
+              name,
+              price,
+              quantity,
+              restaurant_id: restaurantId,
+            });
+          }
+          qtyEl.textContent = 1; // Reset
+          updateBucketDisplay();
+        }
+      } catch (error) {
+        console.error("Error handling menu button:", error);
+        alert("Error updating menu item. Please try again.");
       }
     });
   });
 }
 
+function clearBucket() {
+  bucket = [];
+  updateBucketDisplay();
+}
+
+// Load bucket from server on page load
 document.addEventListener("DOMContentLoaded", () => {
+  // Load bucket from server
+  fetch("/get_bucket")
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("Network response was not ok");
+      }
+      return res.json();
+    })
+    .then((data) => {
+      if (data.bucket) {
+        bucket = data.bucket;
+        updateBucketDisplay();
+
+        // Check if we're on checkout page and bucket is empty
+        if (window.location.pathname === "/checkout" && bucket.length === 0) {
+          window.location.href = "/menu";
+        }
+      }
+    })
+    .catch((error) => {
+      console.error("Error loading bucket:", error);
+    });
+
   if (document.getElementById("menu-list")) {
     const restaurantId = document.getElementById("restaurantId").value;
     fetch(`/api/menu?restaurant_id=${restaurantId}`)
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
       .then((data) => {
         const menuContainer = document.getElementById("menu-list");
         const navbar = document.getElementById("category-navbar");
@@ -76,14 +144,18 @@ document.addEventListener("DOMContentLoaded", () => {
         categories.forEach(([category, items], idx) => {
           const section = createCategorySection(category, items);
           menuContainer.appendChild(section);
-
           navbar.appendChild(createCategoryButton(category, section));
         });
 
         attachMenuButtons();
         updateBucketDisplay();
       })
-      .catch((err) => console.error("Menu fetch error:", err));
+      .catch((error) => {
+        console.error("Menu fetch error:", error);
+        const menuContainer = document.getElementById("menu-list");
+        menuContainer.innerHTML =
+          '<div class="text-red-600 text-center p-4">Failed to load menu. Please refresh the page.</div>';
+      });
   }
 });
 
@@ -176,11 +248,15 @@ function createMenuCard(item) {
       <div class="flex items-center gap-2 mt-3">
         <button class="quantity-btn" data-id="${
           item.id
-        }" data-action="decrease">−</button>
+        }" data-action="decrease" data-name="${item.name}" data-price="${
+    item.price
+  }">−</button>
         <span id="qty-${item.id}" class="w-4 text-center">1</span>
         <button class="quantity-btn" data-id="${
           item.id
-        }" data-action="increase">+</button>
+        }" data-action="increase" data-name="${item.name}" data-price="${
+    item.price
+  }">+</button>
       </div>
     </div>
     <button
@@ -212,7 +288,7 @@ function createMenuCard(item) {
 
       // Add hover effects
       btn.addEventListener("mouseover", () => {
-        btn.style.backgroundColor = "#000000"; // KFC red
+        btn.style.backgroundColor = "#000000";
         btn.style.color = "white";
         btn.style.borderColor = "#000000";
       });
@@ -227,23 +303,4 @@ function createMenuCard(item) {
   }, 0);
 
   return card;
-}
-
-function saveBucketAndGoToOrderDetails() {
-  alert("Button clicked!");
-  fetch("/save_bucket", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ bucket }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.success) {
-        window.location.href = "/order_details";
-      } else {
-        alert("Failed to save bucket!");
-      }
-    });
 }
