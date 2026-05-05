@@ -23,9 +23,9 @@
 ## 🛠️ Tech Stack
 
 - **Backend**: [Flask](https://flask.palletsprojects.com/) (Python)
-- **Database**: [Aiven MySQL](https://aiven.io/) (Managed Cloud Database)
+- **Database**: MySQL
 - **Frontend**: HTML5, [Tailwind CSS](https://tailwindcss.com/), [DaisyUI](https://daisyui.com/)
-- **Deployment**: Ready for [Vercel](https://vercel.com/) or [Render](https://render.com/)
+
 
 ---
 
